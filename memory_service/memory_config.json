@@ -1,0 +1,30 @@
+{
+  "user": {
+    "name": "User",
+    "pronoun": "you",
+    "short_desc": "User"
+  },
+  "ai": {
+    "name": "Assistant",
+    "pronoun": "I",
+    "core_traits": "",
+    "persona_note": ""
+  },
+  "relationship": {
+    "type": "AI companion",
+    "dynamics": ""
+  },
+  "project": {
+    "name": "Tidal"
+  },
+  "ui": {
+    "user_color": "#4A90D9",
+    "ai_color": "#E8917E"
+  },
+  "rhythm": {
+    "deep_cycle_idle_minutes": 60
+  },
+  "librarian": {
+    "exclude_sources": []
+  }
+}

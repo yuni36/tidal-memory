@@ -1,0 +1,134 @@
+# Tidal 四服务 + Caddy 反代。
+# 用法：cp compose.env.example .env，改 RELAY_SECRET；三份服务 .env 见 ops/run-cloud.md。
+# 日常 Windows 开发仍用 start.bat，不要与 Docker 同时写同一套数据。
+
+services:
+  chroma:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["python", "-u", "memory_service/chroma_server.py"]
+    environment:
+      TIDAL_BIND: "0.0.0.0"
+      TIDAL_ENV: production
+      TZ: ${TZ:-Asia/Shanghai}
+    volumes:
+      - ./chroma_data:/app/memory_service/chroma_data
+    expose:
+      - "7707"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://127.0.0.1:7707/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 24
+      start_period: 60s
+
+  relay:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["python", "-u", "chat_relay/app.py"]
+    env_file:
+      - ./chat_relay/.env
+    environment:
+      RELAY_SECRET: ${RELAY_SECRET:?set RELAY_SECRET in compose .env}
+      MEMORY_URL: http://memory:3013
+      TIDAL_BIND: "0.0.0.0"
+      TIDAL_ENV: production
+      RELAY_PUBLIC_PREFIX: ""
+      RELAY_DB: /app/chat_relay/data/tidal.db
+      TZ: ${TZ:-Asia/Shanghai}
+    volumes:
+      - ./chat_relay/data:/app/chat_relay/data
+      - ./chat_relay/uploads:/app/chat_relay/uploads
+    expose:
+      - "3011"
+    depends_on:
+      memory:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://127.0.0.1:3011/healthz"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  memory:
+    build:
+      context: .
+      dockerfile: memory_service/Dockerfile
+    env_file:
+      - ./memory_service/.env
+    environment:
+      RELAY_SECRET: ${RELAY_SECRET:?set RELAY_SECRET in compose .env}
+      RELAY_URL: http://relay:3011
+      CHROMA_URL: http://chroma:7707
+      TIDAL_ENV: production
+      TZ: ${TZ:-Asia/Shanghai}
+    volumes:
+      - ./memory_service/data:/app/memory_service/data
+      - ./backups:/app/backups
+    expose:
+      - "3013"
+    depends_on:
+      chroma:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3013/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  brain:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["python", "-u", "ai_brain/bridge.py"]
+    env_file:
+      - ./ai_brain/.env
+    environment:
+      RELAY_SECRET: ${RELAY_SECRET:?set RELAY_SECRET in compose .env}
+      RELAY_URL: http://relay:3011
+      MEMORY_URL: http://memory:3013
+      TIDAL_BIND: "0.0.0.0"
+      TIDAL_ENV: production
+      TZ: ${TZ:-Asia/Shanghai}
+    volumes:
+      - ./ai_brain/.bridge_state:/app/ai_brain/.bridge_state
+      - ./logs:/app/logs
+    depends_on:
+      relay:
+        condition: service_healthy
+      memory:
+        condition: service_healthy
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      TIDAL_SITE_ADDRESS: ${TIDAL_SITE_ADDRESS:-:80}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      relay:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:

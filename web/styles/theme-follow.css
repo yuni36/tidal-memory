@@ -1,0 +1,86 @@
+/* 子页跟随 companion_theme：冷灰暗色；覆盖写死的 white 输入/按钮 */
+:root {
+  --input-bg: #ffffff;
+}
+html[data-theme="night"] {
+  color-scheme: dark;
+  --bg: #111318;
+  --text: #e6e9ee;
+  --text-soft: #9aa3ad;
+  --text-faint: #6b7380;
+  --accent: #6ea8c9;
+  --card-bg: #1a1e24;
+  --card-line: rgba(255, 255, 255, 0.08);
+  --card-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --input-bg: #0e1116;
+  --row-press: rgba(255, 255, 255, 0.04);
+  --heat-0: rgba(255, 255, 255, 0.05);
+  --heat-1: rgba(110, 168, 201, 0.18);
+  --heat-2: rgba(110, 168, 201, 0.32);
+  --heat-3: rgba(110, 168, 201, 0.48);
+  --heat-4: rgba(110, 168, 201, 0.68);
+}
+html[data-theme="night"] body {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+}
+html[data-theme="night"] a { color: #8ebdd6; }
+html[data-theme="night"] input,
+html[data-theme="night"] textarea,
+html[data-theme="night"] select {
+  background: var(--input-bg) !important;
+  color: var(--text) !important;
+  border-color: var(--card-line) !important;
+}
+html[data-theme="night"] .back-btn,
+html[data-theme="night"] .btn:not(.primary),
+html[data-theme="night"] .key-toggle,
+html[data-theme="night"] .seg button.on,
+html[data-theme="night"] .chip,
+html[data-theme="night"] .tone-cluster,
+html[data-theme="night"] .panel,
+html[data-theme="night"] .card {
+  background: var(--card-bg) !important;
+  color: var(--text) !important;
+  border-color: var(--card-line) !important;
+}
+html[data-theme="night"] .btn.primary {
+  background: var(--accent) !important;
+  color: #0e1116 !important;
+  border-color: var(--accent) !important;
+}
+html[data-theme="night"] .seg {
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+html[data-theme="night"] .seg button {
+  color: var(--text-soft) !important;
+}
+html[data-theme="night"] .cell:not(.blank) {
+  background: var(--heat-0, rgba(255, 255, 255, 0.05));
+  color: var(--text);
+}
+html[data-theme="night"] .hint,
+html[data-theme="night"] .text-soft,
+html[data-theme="night"] .empty,
+html[data-theme="night"] .footer,
+html[data-theme="night"] .total-lab,
+html[data-theme="night"] .card-title,
+html[data-theme="night"] summary {
+  color: var(--text-soft) !important;
+}
+html[data-theme="night"] .log-table th,
+html[data-theme="night"] .log-table td {
+  color: var(--text) !important;
+  border-color: var(--card-line) !important;
+}
+html[data-theme="night"] .icon-btn,
+html[data-theme="night"] .btn {
+  background: var(--input-bg) !important;
+  color: var(--text) !important;
+  border-color: var(--card-line) !important;
+}
+html[data-theme="night"] h1,
+html[data-theme="night"] .month-label,
+html[data-theme="night"] .total-num {
+  color: var(--text) !important;
+}

@@ -1,0 +1,25 @@
+.git
+.gitignore
+.venv
+**/__pycache__
+**/*.pyc
+**/node_modules
+# 只排除仓库根 Windows 便携 Node，勿排除 memory_service/services/tools
+/tools
+*.db
+**/*.db
+**/*.db-shm
+**/*.db-wal
+memory_service/chroma_data
+/chroma_data
+chat_relay/data
+memory_service/data
+chat_relay/uploads
+ai_brain/.bridge_state
+backups
+logs
+.env
+**/.env
+chat_relay/.relay_secret
+*.pem
+!*.pem.example

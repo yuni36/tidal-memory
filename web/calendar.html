@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tidal — 日历</title>
+<link rel="stylesheet" href="styles/theme-follow.css">
+<script src="js/theme-follow.js"></script>
+
+<style>
+  :root {
+    --input-bg: #ffffff;
+    --bg: #F7FAFC;
+    --text: #253447;
+    --text-soft: #5E7080;
+    --text-faint: #93A3B0;
+    --accent: #4C6378;
+    --card-bg: rgba(244,248,250,.72);
+    --card-line: rgba(150,168,182,.18);
+    --card-shadow: 0 8px 24px rgba(70,92,108,.06);
+    --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-ui);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 1.5rem;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  .header { display: flex; align-items: center; gap: .75rem; margin-bottom: 1.25rem; }
+  .back-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 2.2rem; height: 2.2rem;
+    border: 1px solid var(--card-line); border-radius: 50%;
+    background: var(--input-bg); color: var(--text); text-decoration: none;
+  }
+  h1 { font-size: 1.25rem; font-weight: 600; }
+  .hint { font-size: .78rem; color: var(--text-soft); line-height: 1.45; }
+  .card {
+    background: var(--card-bg); border: 1px solid var(--card-line);
+    border-radius: 1rem; padding: 1.1rem 1.15rem; margin-bottom: 1rem;
+    box-shadow: var(--card-shadow); backdrop-filter: blur(8px);
+  }
+  .card-title { font-size: .95rem; font-weight: 600; margin-bottom: .35rem; }
+  .month-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: .75rem;
+  }
+  .month-label { font-size: 1rem; font-weight: 600; }
+  .icon-btn {
+    width: 2rem; height: 2rem; border-radius: 50%;
+    border: 1px solid var(--card-line); background: var(--input-bg);
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer; color: var(--text);
+  }
+  .cal-head, .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: .3rem; }
+  .cal-head { margin-bottom: .3rem; }
+  .cal-head span { text-align: center; font-size: .7rem; color: var(--text-faint); }
+  .cell {
+    position: relative; aspect-ratio: 1; border-radius: .5rem;
+    background: rgba(150,168,182,.07); border: 1px solid transparent;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    cursor: pointer; padding: 0; font-family: inherit; color: inherit;
+  }
+  .cell.blank { background: transparent; cursor: default; }
+  .cell.today { box-shadow: inset 0 0 0 1px rgba(76,99,120,.45); }
+  .cell.sel { border-color: var(--accent); background: rgba(76,99,120,.12); }
+  .cell-day { font-size: .85rem; font-weight: 600; line-height: 1; }
+  .cell-dots {
+    display: flex; gap: 2px; margin-top: .2rem; min-height: 5px; align-items: center;
+  }
+  .dot {
+    width: 4px; height: 4px; border-radius: 50%;
+    background: var(--accent); opacity: .75;
+  }
+  .dot.more { width: auto; height: auto; border-radius: 0; background: none;
+    font-size: .55rem; color: var(--text-faint); opacity: 1; }
+  .day-title { font-size: .9rem; font-weight: 600; margin-bottom: .5rem; }
+  .sched-item {
+    display: flex; gap: .5rem; align-items: flex-start;
+    padding: .55rem 0; border-bottom: 1px solid var(--card-line); font-size: .85rem;
+  }
+  .sched-item:last-child { border-bottom: 0; }
+  .sched-main { flex: 1; min-width: 0; }
+  .sched-title { font-weight: 600; }
+  .sched-meta { color: var(--text-soft); font-size: .75rem; margin-top: .15rem; }
+  .sched-actions { display: flex; gap: .25rem; flex-shrink: 0; }
+  .sched-actions button {
+    border: 1px solid var(--card-line); background: var(--input-bg); border-radius: .4rem;
+    padding: .2rem .45rem; font-size: .7rem; cursor: pointer; color: var(--accent);
+  }
+  .empty { text-align: center; color: var(--text-faint); font-size: .85rem; padding: 1.25rem 0; }
+  details summary { cursor: pointer; font-size: .85rem; color: var(--text-soft); }
+  .field { margin-bottom: .55rem; }
+  .field label { display: block; font-size: .72rem; color: var(--text-soft); margin-bottom: .2rem; }
+  .field input, .field select, .field textarea {
+    width: 100%; padding: .45rem .55rem; border: 1px solid var(--card-line);
+    border-radius: .5rem; background: var(--input-bg); font-family: inherit; font-size: .85rem; color: var(--text);
+  }
+  .field textarea { min-height: 4.5rem; resize: vertical; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+  .btn {
+    padding: .55rem 1rem; border: 1px solid var(--card-line); border-radius: .6rem;
+    background: var(--input-bg); color: var(--text); font-family: inherit; font-size: .85rem; cursor: pointer;
+  }
+  .btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
+  .btn-row { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .5rem; }
+  .parse-card {
+    margin-top: .5rem; padding: .65rem; border-radius: .6rem;
+    background: rgba(150,168,182,.08); border: 1px solid var(--card-line);
+  }
+  .parse-card .warn-line { color: #9C5B3C; font-size: .75rem; margin-top: .35rem; }
+  .preview {
+    margin-top: .75rem; padding: .65rem; border-radius: .6rem;
+    background: rgba(76,99,120,.06); font-size: .8rem; white-space: pre-wrap;
+    color: var(--text-soft); font-family: ui-monospace, Consolas, monospace;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <a class="back-btn" href="/#home" title="返回主页">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+  </a>
+  <h1>日历</h1>
+</div>
+
+<div class="card">
+  <div class="month-bar">
+    <button class="icon-btn" id="prevMonth" type="button" aria-label="上个月">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <div class="month-label" id="monthLabel">——</div>
+    <button class="icon-btn" id="nextMonth" type="button" aria-label="下个月">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>
+    </button>
+  </div>
+  <p class="hint">自然日 00:00–23:59（UTC+8）。点某日看当天；课表周重复会展开到格子上。</p>
+  <div class="cal-head" id="calHead"></div>
+  <div class="cal-grid" id="calGrid"></div>
+</div>
+
+<div class="card">
+  <div class="day-title" id="dayTitle">选择日期</div>
+  <div id="dayList"></div>
+  <div class="empty" id="dayEmpty">点上方日期查看日程。</div>
+</div>
+
+<div class="card">
+  <div class="card-title">添加</div>
+  <details open>
+    <summary>一句话解析</summary>
+    <div style="margin-top:.75rem;">
+      <div class="field"><textarea id="sParseText" placeholder="下周三线代考试，周五交数据结构作业"></textarea></div>
+      <div class="btn-row">
+        <button type="button" class="btn primary" id="sParseBtn">解析</button>
+        <button type="button" class="btn" id="sConfirmBtn" hidden>确认写入选中</button>
+      </div>
+      <div id="sParseResult"></div>
+      <div class="hint" id="sParseMsg" style="margin-top:.4rem;"></div>
+    </div>
+  </details>
+
+  <details style="margin-top:.75rem;">
+    <summary>手动添加</summary>
+    <div style="margin-top:.75rem;">
+      <div class="field"><label>标题</label><input id="sTitle" placeholder="线代期末考" /></div>
+      <div class="row2">
+        <div class="field"><label>日期时间</label><input id="sDue" type="datetime-local" /></div>
+        <div class="field"><label>结束（可选）</label><input id="sEnd" type="datetime-local" /></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>分类</label>
+          <select id="sCat">
+            <option value="exam">考试</option>
+            <option value="homework">作业</option>
+            <option value="deadline">截止</option>
+            <option value="trip">外出</option>
+            <option value="appointment">约见</option>
+            <option value="class">课</option>
+            <option value="birthday">生日</option>
+            <option value="reminder" selected>杂事</option>
+          </select>
+        </div>
+        <div class="field"><label>模糊时段</label>
+          <select id="sLabel">
+            <option value="">（无）</option>
+            <option>上午</option><option>中午</option><option>下午</option><option>晚上</option><option>晚自习</option>
+          </select>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field"><label><input type="checkbox" id="sAllDay" /> 全天</label></div>
+        <div class="field" id="sRecurWrap" hidden>
+          <label>周重复（课）</label><input id="sRecurMeta" placeholder="1,3,5 = 周一三五" />
+        </div>
+      </div>
+      <div class="btn-row">
+        <button type="button" class="btn primary" id="sSave">保存</button>
+      </div>
+    </div>
+  </details>
+
+  <details style="margin-top:.75rem;">
+    <summary>解析模型</summary>
+    <div style="margin-top:.75rem;">
+      <div class="field">
+        <label for="sParserProfile">当前使用</label>
+        <select id="sParserProfile">
+          <option value="">（不指定，沿用现有配置）</option>
+        </select>
+      </div>
+      <div class="btn-row">
+        <button type="button" class="btn primary" id="sCfgSave">保存选择</button>
+        <span class="hint" id="sCfgMsg"></span>
+      </div>
+      <div class="hint" id="sProviderHint"></div>
+    </div>
+  </details>
+
+  <div class="preview" id="sPreview" hidden></div>
+</div>
+
+<script>
+(function () {
+  const API_BASE = "";
+  const TOKEN_KEY = "companion_secret";
+  const WD = ["一", "二", "三", "四", "五", "六", "日"];
+  const $ = (id) => document.getElementById(id);
+  function token() {
+    const t = localStorage.getItem(TOKEN_KEY);
+    return t ? "Bearer " + t : "0";
+  }
+  const auth = () => ({ Authorization: token(), "Content-Type": "application/json" });
+
+  let cursor = new Date();
+  let selectedDay = "";
+  let rawItems = [];
+  let parseItems = [];
+
+  function pad(n) { return String(n).padStart(2, "0"); }
+  function ymd(d) {
+    return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+  }
+  function todayKey() { return ymd(new Date()); }
+  function monthBounds(y, m) {
+    const from = y + "-" + pad(m) + "-01";
+    const last = new Date(y, m, 0).getDate();
+    const to = y + "-" + pad(m) + "-" + pad(last);
+    return { from, to };
+  }
+  function addDays(ymdStr, n) {
+    const [Y, M, D] = ymdStr.split("-").map(Number);
+    const d = new Date(Y, M - 1, D + n);
+    return ymd(d);
+  }
+  function weekdayMon1(ymdStr) {
+    const [Y, M, D] = ymdStr.split("-").map(Number);
+    const js = new Date(Y, M - 1, D).getDay(); // 0=Sun
+    return js === 0 ? 7 : js;
+  }
+  function parseRecurDays(meta) {
+    if (!meta) return [];
+    return String(meta).split(/[,，\s]+/).map((x) => parseInt(x, 10)).filter((n) => n >= 1 && n <= 7);
+  }
+  function hmFromDue(due) {
+    const m = String(due || "").match(/T(\d{2}:\d{2})/);
+    return m ? m[1] : "00:00";
+  }
+
+  /** 把 pending 行展开成当月 occurrence（含 weekly） */
+  function expandForMonth(items, from, to) {
+    const out = [];
+    for (const row of items) {
+      if (row.recur === "weekly") {
+        const days = parseRecurDays(row.recur_meta);
+        if (!days.length) continue;
+        let cur = from;
+        while (cur <= to) {
+          if (days.includes(weekdayMon1(cur))) {
+            const hm = row.all_day ? "00:00" : hmFromDue(row.due_at);
+            const endHm = row.end_at ? hmFromDue(row.end_at) : null;
+            out.push({
+              ...row,
+              occurrence_date: cur,
+              calendar_date: cur,
+              due_at: cur + "T" + hm + ":00+08:00",
+              end_at: endHm ? cur + "T" + endHm + ":00+08:00" : null,
+              _virtual: true,
+            });
+          }
+          cur = addDays(cur, 1);
+        }
+        continue;
+      }
+      if (row.recur === "yearly") {
+        const md = (row.calendar_date || "").slice(5);
+        if (!md) continue;
+        const thisYear = from.slice(0, 4) + "-" + md;
+        if (thisYear >= from && thisYear <= to) {
+          out.push({
+            ...row,
+            occurrence_date: thisYear,
+            calendar_date: thisYear,
+            due_at: String(row.due_at || "").replace(/^\d{4}-\d{2}-\d{2}/, thisYear),
+            _virtual: true,
+          });
+        }
+        continue;
+      }
+      const cd = row.calendar_date || "";
+      if (cd >= from && cd <= to) {
+        out.push({ ...row, occurrence_date: cd });
+      }
+    }
+    out.sort((a, b) => String(a.due_at).localeCompare(String(b.due_at)) || ((a.id || 0) - (b.id || 0)));
+    return out;
+  }
+
+  function sortKey(it) {
+    if (it.all_day) return "99:99";
+    if (it.time_label) {
+      const map = { 上午: "09:00", 中午: "12:00", 下午: "14:00", 晚上: "19:00", 晚自习: "19:00" };
+      return map[it.time_label] || "12:00";
+    }
+    return hmFromDue(it.due_at);
+  }
+
+  function whenLabel(it) {
+    if (it.all_day) return "全天";
+    if (it.time_label) return it.time_label;
+    const start = hmFromDue(it.due_at);
+    const end = it.end_at ? hmFromDue(it.end_at) : "";
+    return end ? start + "–" + end : start;
+  }
+
+  function localInputToISO(v) {
+    if (!v) return "";
+    const m = String(v).match(/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})/);
+    if (!m) return v;
+    return m[1] + "T" + m[2] + ":00+08:00";
+  }
+
+  async function loadMonth() {
+    const r = await fetch(API_BASE + "/app/schedules?status=pending", { headers: auth() });
+    if (r.status === 401) { location.replace("/"); return; }
+    const d = await r.json();
+    if (!d.ok && d.error) throw new Error(d.error || "加载失败");
+    rawItems = d.items || [];
+    renderCal();
+    renderDay();
+    loadPreview();
+  }
+
+  async function loadPreview() {
+    try {
+      const prev = await fetch(API_BASE + "/app/schedules?injectable=1", { headers: auth() });
+      const p = await prev.json();
+      const el = $("sPreview");
+      if (p.text) { el.hidden = false; el.textContent = "注入预览\n" + p.text; }
+      else { el.hidden = true; el.textContent = ""; }
+    } catch (_) { /* ignore */ }
+  }
+
+  function monthExpanded() {
+    const y = cursor.getFullYear();
+    const m = cursor.getMonth() + 1;
+    const { from, to } = monthBounds(y, m);
+    return { y, m, from, to, items: expandForMonth(rawItems, from, to) };
+  }
+
+  function renderCal() {
+    const { y, m, from, to, items } = monthExpanded();
+    $("monthLabel").textContent = y + " 年 " + m + " 月";
+    $("calHead").innerHTML = WD.map((w) => "<span>" + w + "</span>").join("");
+
+    const byDay = new Map();
+    for (const it of items) {
+      const k = it.occurrence_date || it.calendar_date;
+      if (!byDay.has(k)) byDay.set(k, []);
+      byDay.get(k).push(it);
+    }
+
+    if (!selectedDay || selectedDay < from || selectedDay > to) {
+      const t = todayKey();
+      selectedDay = (t >= from && t <= to) ? t : from;
+    }
+
+    const first = new Date(y, m - 1, 1);
+    const lead = (first.getDay() + 6) % 7;
+    const total = new Date(y, m, 0).getDate();
+    const today = todayKey();
+    const cells = [];
+    for (let i = 0; i < lead; i++) cells.push('<div class="cell blank"></div>');
+    for (let d = 1; d <= total; d++) {
+      const key = y + "-" + pad(m) + "-" + pad(d);
+      const list = byDay.get(key) || [];
+      const cls = ["cell", key === today ? "today" : "", key === selectedDay ? "sel" : ""].filter(Boolean).join(" ");
+      let dots = "";
+      if (list.length) {
+        const n = Math.min(list.length, 3);
+        dots = '<span class="cell-dots">' +
+          Array.from({ length: n }, () => '<span class="dot"></span>').join("") +
+          (list.length > 3 ? '<span class="dot more">+</span>' : "") +
+          "</span>";
+      } else {
+        dots = '<span class="cell-dots"></span>';
+      }
+      cells.push(
+        '<button type="button" class="' + cls + '" data-day="' + key + '">' +
+          '<span class="cell-day">' + d + "</span>" + dots +
+        "</button>"
+      );
+    }
+    $("calGrid").innerHTML = cells.join("");
+  }
+
+  function renderDay() {
+    const title = $("dayTitle");
+    const box = $("dayList");
+    const empty = $("dayEmpty");
+    if (!selectedDay) {
+      title.textContent = "选择日期";
+      box.innerHTML = "";
+      empty.hidden = false;
+      empty.textContent = "点上方日期查看日程。";
+      return;
+    }
+    const wd = WD[weekdayMon1(selectedDay) - 1];
+    title.textContent = selectedDay + " · 周" + wd;
+    const { items } = monthExpanded();
+    const dayItems = items
+      .filter((it) => (it.occurrence_date || it.calendar_date) === selectedDay)
+      .sort((a, b) => sortKey(a).localeCompare(sortKey(b)) || String(a.title).localeCompare(String(b.title)));
+
+    box.innerHTML = "";
+    empty.hidden = dayItems.length > 0;
+    empty.textContent = "这天没有待办。";
+    for (const it of dayItems) {
+      const div = document.createElement("div");
+      div.className = "sched-item";
+      const recurHint = it.recur === "weekly" ? " · 每周" : (it.recur === "yearly" ? " · 每年" : "");
+      div.innerHTML =
+        '<div class="sched-main"><div class="sched-title"></div><div class="sched-meta"></div></div>' +
+        '<div class="sched-actions"><button type="button" data-done>完成</button><button type="button" data-del>取消</button></div>';
+      div.querySelector(".sched-title").textContent = it.title;
+      div.querySelector(".sched-meta").textContent =
+        whenLabel(it) + " · " + (it.category || "") + recurHint;
+      div.querySelector("[data-done]").onclick = () => patchSched(it.id, { status: "done" });
+      div.querySelector("[data-del]").onclick = () => delSched(it.id);
+      box.appendChild(div);
+    }
+
+    // 手写默认落到选中日
+    const due = $("sDue");
+    if (due && !due.value) {
+      due.value = selectedDay + "T09:00";
+    }
+  }
+
+  async function patchSched(id, body) {
+    await fetch(API_BASE + "/app/schedules/" + id, { method: "PUT", headers: auth(), body: JSON.stringify(body) });
+    await loadMonth();
+  }
+  async function delSched(id) {
+    await fetch(API_BASE + "/app/schedules/" + id, { method: "DELETE", headers: auth() });
+    await loadMonth();
+  }
+
+  $("calGrid").addEventListener("click", (e) => {
+    const cell = e.target.closest(".cell[data-day]");
+    if (!cell) return;
+    selectedDay = cell.dataset.day;
+    renderCal();
+    renderDay();
+  });
+  $("prevMonth").addEventListener("click", () => {
+    cursor.setDate(1);
+    cursor.setMonth(cursor.getMonth() - 1);
+    loadMonth().catch(showErr);
+  });
+  $("nextMonth").addEventListener("click", () => {
+    cursor.setDate(1);
+    cursor.setMonth(cursor.getMonth() + 1);
+    loadMonth().catch(showErr);
+  });
+
+  function showErr(e) {
+    $("dayEmpty").hidden = false;
+    $("dayEmpty").textContent = "加载失败：" + e.message;
+  }
+
+  $("sCat").addEventListener("change", () => {
+    $("sRecurWrap").hidden = $("sCat").value !== "class";
+  });
+
+  $("sSave").addEventListener("click", async () => {
+    const body = {
+      title: $("sTitle").value.trim(),
+      due_at: localInputToISO($("sDue").value),
+      end_at: localInputToISO($("sEnd").value) || null,
+      category: $("sCat").value,
+      time_label: $("sLabel").value || null,
+      all_day: $("sAllDay").checked,
+      source: "manual",
+    };
+    if ($("sCat").value === "class" && $("sRecurMeta").value.trim()) {
+      body.recur = "weekly";
+      body.recur_meta = $("sRecurMeta").value.trim();
+    }
+    const r = await fetch(API_BASE + "/app/schedules", { method: "POST", headers: auth(), body: JSON.stringify(body) });
+    const d = await r.json();
+    if (!d.ok) { alert(d.error || "保存失败"); return; }
+    $("sTitle").value = "";
+    if (d.items && d.items[0] && d.items[0].calendar_date) selectedDay = d.items[0].calendar_date;
+    else if (d.item && d.item.calendar_date) selectedDay = d.item.calendar_date;
+    await loadMonth();
+  });
+
+  $("sParseBtn").addEventListener("click", async () => {
+    $("sParseMsg").textContent = "解析中…";
+    $("sConfirmBtn").hidden = true;
+    $("sParseResult").innerHTML = "";
+    try {
+      const r = await fetch(API_BASE + "/app/schedules/parse", {
+        method: "POST", headers: auth(),
+        body: JSON.stringify({ text: $("sParseText").value }),
+      });
+      const d = await r.json();
+      parseItems = d.items || [];
+      if (d.error) {
+        $("sParseMsg").textContent = "失败：" + d.error;
+      } else if (d.unclear && d.unclear.length && !parseItems.length) {
+        $("sParseMsg").textContent = "未明：" + d.unclear.join("；");
+      } else if (parseItems.length) {
+        $("sParseMsg").textContent = (d.unclear && d.unclear.length)
+          ? ("请确认写入（另有未明：" + d.unclear.join("；") + "）")
+          : "请勾选后确认写入";
+      } else {
+        $("sParseMsg").textContent = "无结果";
+      }
+      const box = $("sParseResult");
+      for (let i = 0; i < parseItems.length; i++) {
+        const it = parseItems[i];
+        const card = document.createElement("div");
+        card.className = "parse-card";
+        card.innerHTML = '<label><input type="checkbox" checked data-i="' + i + '"/> <strong></strong></label>' +
+          '<div class="hint"></div>' +
+          (it.conflicts && it.conflicts.length ? '<div class="warn-line"></div>' : "");
+        card.querySelector("strong").textContent = it.title;
+        card.querySelector(".hint").textContent =
+          (it.calendar_date || "") + " · " + (it.category || "") + " · " + (it.due_at || "") +
+          (it.suspicious ? " · 日期过远" : "");
+        if (it.conflicts && it.conflicts.length) {
+          card.querySelector(".warn-line").textContent =
+            "可能重复：#" + it.conflicts.map((c) => c.id + " " + c.title).join(", ");
+        }
+        box.appendChild(card);
+      }
+      $("sConfirmBtn").hidden = !parseItems.length;
+    } catch (e) {
+      $("sParseMsg").textContent = "请求失败：" + e.message;
+    }
+  });
+
+  $("sConfirmBtn").addEventListener("click", async () => {
+    const picked = [];
+    $("sParseResult").querySelectorAll("input[type=checkbox][data-i]").forEach((cb) => {
+      if (cb.checked) picked.push(parseItems[Number(cb.dataset.i)]);
+    });
+    if (!picked.length) return;
+    const items = picked.map((it) => ({
+      title: it.title,
+      due_at: it.due_at,
+      end_at: it.end_at,
+      time_label: it.time_label,
+      all_day: it.all_day,
+      category: it.category,
+      note: it.note,
+      source: "parse",
+    }));
+    const r = await fetch(API_BASE + "/app/schedules", {
+      method: "POST", headers: auth(), body: JSON.stringify({ items }),
+    });
+    const d = await r.json();
+    if (!d.ok) { alert(d.error || "写入失败"); return; }
+    $("sParseText").value = "";
+    $("sParseResult").innerHTML = "";
+    $("sConfirmBtn").hidden = true;
+    $("sParseMsg").textContent = "已写入 " + (d.items || []).length + " 条";
+    if (items[0] && items[0].due_at) selectedDay = items[0].due_at.slice(0, 10);
+    await loadMonth();
+  });
+
+  let parserProfiles = [];
+
+  async function loadCfg() {
+    try {
+      const [pr, cfg] = await Promise.all([
+        fetch(API_BASE + "/app/api/profiles", { headers: auth() }).then((r) => r.json()),
+        fetch(API_BASE + "/app/schedules/parser-config", { headers: auth() })
+          .then((r) => r.json())
+          .catch(() => ({})),
+      ]);
+      parserProfiles = (pr.profiles || []).filter((p) => p.protocol === "openai");
+      const sel = $("sParserProfile");
+      sel.innerHTML = '<option value="">（不指定，沿用现有配置）</option>';
+      parserProfiles.forEach((p) => {
+        const o = document.createElement("option");
+        o.value = p.id;
+        o.textContent = `${p.name} · ${p.model || "未填模型"}`;
+        sel.appendChild(o);
+      });
+      sel.value = (pr.active || {}).schedule || "";
+      if (cfg && cfg.configured) {
+        $("sProviderHint").textContent = `已生效：${cfg.model_name || ""}${cfg.provider ? " · " + cfg.provider : ""}`;
+      }
+      if (!parserProfiles.length) {
+        $("sCfgMsg").textContent = "配置库还没有 OpenAI 兼容配置，先去设置页新增";
+      }
+    } catch (e) {
+      $("sCfgMsg").textContent = "读取配置失败：" + e.message;
+    }
+  }
+
+  $("sCfgSave").addEventListener("click", async () => {
+    const id = $("sParserProfile").value;
+    $("sCfgMsg").textContent = "保存中…";
+    try {
+      const r = id
+        ? await fetch(API_BASE + `/app/api/profiles/${encodeURIComponent(id)}/activate`, {
+            method: "POST", headers: auth(), body: JSON.stringify({ scope: "schedule" }),
+          })
+        : await fetch(API_BASE + "/app/api/profiles/deactivate", {
+            method: "POST", headers: auth(), body: JSON.stringify({ scope: "schedule" }),
+          });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.detail || `保存失败: ${r.status}`);
+      $("sCfgMsg").textContent = id ? "已保存，约 1 分钟内生效" : "已取消指定（沿用现有配置）";
+    } catch (e) {
+      $("sCfgMsg").textContent = e.message;
+    }
+  });
+
+  selectedDay = todayKey();
+  loadMonth().catch(showErr);
+  loadCfg().catch(() => {});
+})();
+</script>
+</body>
+</html>

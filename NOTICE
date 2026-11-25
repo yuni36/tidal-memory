@@ -1,0 +1,82 @@
+Tidal
+=======
+
+This project is released under the GNU General Public License v3.0
+(see the LICENSE file in this repository).
+
+It incorporates and builds upon earlier work that was published under
+the MIT License. Those upstream copyrights and license notices are
+preserved below. Nothing in this NOTICE changes the GPL-3.0 terms that
+apply to this combined work as distributed here.
+
+
+Upstream components (MIT)
+-------------------------
+
+1) Tidal Echo (MIT editions only)
+   Portion of the chat shell / relay lineage used in this tree comes from
+   Tidal Echo versions that were published under the MIT License **before
+   2026-08-16**. Do not treat later Echo releases (including any AGPL
+   change after that date) as part of this project's upstream lineage.
+
+   Copyright (c) the Tidal Echo authors and contributors of those MIT editions.
+   MIT License — see the standard MIT terms reproduced at the end of this file.
+
+
+2) Memory Constellations (MIT)
+   The long-term memory pipeline (Scribe / Archivist / Librarian style
+   constellation memory) is based on Memory Constellations and adapted
+   for this project (primarily under `memory_service/`).
+
+   Copyright (c) the Memory Constellations authors and contributors.
+   MIT License — see the standard MIT terms reproduced at the end of this file.
+
+
+3) jiwen (MIT)
+   Optional warmth / proactive-contact related functionality uses the
+   jiwen package (npm: `@clarashafiq/jiwen`) and related integration code.
+
+   Copyright (c) the jiwen authors and contributors.
+   MIT License — see the standard MIT terms reproduced at the end of this file.
+
+
+4) Administrative divisions of China (MIT)
+   `web/js/china-regions.json` (settings page city picker data) is generated
+   from the `modood/Administrative-divisions-of-China` dataset
+   (https://github.com/modood/Administrative-divisions-of-China), dist/pca.json.
+   Only administrative region names are kept; Hong Kong / Macau / Taiwan
+   entries are added manually at city level.
+
+   Copyright (c) the Administrative-divisions-of-China authors and contributors.
+   MIT License — see the standard MIT terms reproduced at the end of this file.
+
+
+This project's own contributions
+--------------------------------
+
+Original work in this repository focuses on the `ai_brain` main loop and
+on integrating / modifying the chat shell and memory pipeline for a
+self-hosted single-user companion. Do not describe the shell or memory
+pipeline as invented from scratch; credit the upstream projects above.
+
+
+Standard MIT License text (for the upstream components listed above)
+--------------------------------------------------------------------
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

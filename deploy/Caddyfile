@@ -1,0 +1,11 @@
+# 站点地址：本机无域名用 :80；有域名时在根目录 .env 设 TIDAL_SITE_ADDRESS=example.com
+{$TIDAL_SITE_ADDRESS} {
+	encode gzip
+	reverse_proxy relay:3011 {
+		flush_interval -1
+		transport http {
+			read_timeout 3600s
+			write_timeout 3600s
+		}
+	}
+}

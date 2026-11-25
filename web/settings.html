@@ -1,0 +1,1910 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tidal — 设置</title>
+<link rel="stylesheet" href="styles/theme-follow.css">
+<script src="js/theme-follow.js"></script>
+<style>
+  :root {
+    --bg: #F7FAFC;
+    --text: #253447;
+    --text-soft: #5E7080;
+    --text-faint: #93A3B0;
+    --accent: #4C6378;
+    --card-bg: rgba(244,248,250,.92);
+    --card-line: rgba(150,168,182,.18);
+    --card-shadow: 0 8px 24px rgba(70,92,108,.06);
+    --input-bg: #ffffff;
+    --row-press: rgba(200,210,220,.28);
+    --font-cn: "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
+    --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-ui);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 1.5rem;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.2rem; height: 2.2rem;
+    border: 1px solid var(--card-line);
+    border-radius: 50%;
+    background: var(--card-bg);
+    color: var(--accent);
+    cursor: pointer;
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+  .back-btn:hover { background: var(--row-press); }
+  h1 {
+    font-family: var(--font-cn);
+    font-size: 1.5rem;
+    font-weight: 500;
+    flex: 1;
+  }
+  .theme-pill {
+    border: 1px solid var(--card-line);
+    background: var(--card-bg);
+    color: var(--text-soft);
+    border-radius: 999px;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.78rem;
+    cursor: pointer;
+  }
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-line);
+    border-radius: 1rem;
+    margin-bottom: 0.75rem;
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+  }
+  .acc-head {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 1rem 1.1rem;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
+  }
+  .acc-head:active { background: var(--row-press); }
+  .acc-open {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
+    text-align: left;
+    padding: 0;
+  }
+  .acc-head .card-title {
+    flex: 1;
+    margin: 0;
+    text-transform: none;
+    letter-spacing: 0.02em;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .acc-chev {
+    width: 18px; height: 18px; opacity: .45;
+    transition: transform .18s ease;
+    flex: 0 0 auto;
+  }
+  .card.open .acc-chev { transform: rotate(90deg); opacity: .85; }
+  .acc-body {
+    display: none;
+    padding: 0 1.15rem 1.15rem;
+    border-top: 1px solid var(--card-line);
+  }
+  .card.open .acc-body { display: block; padding-top: 0.95rem; }
+  .acc-switch {
+    position: relative;
+    width: 42px; height: 24px;
+    flex: 0 0 auto;
+  }
+  .acc-switch input {
+    position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; z-index: 2;
+  }
+  .acc-switch span {
+    display: block; width: 100%; height: 100%; border-radius: 999px;
+    background: rgba(120,140,160,.28);
+    transition: background .18s ease;
+  }
+  .acc-switch span::after {
+    content: ""; position: absolute; top: 3px; left: 3px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.2);
+    transition: transform .18s ease;
+  }
+  .acc-switch input:checked + span { background: var(--accent); }
+  .acc-switch input:checked + span::after { transform: translateX(18px); }
+  html[data-theme="night"] .acc-switch span::after { background: #e6e9ee; }
+
+  .card-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-soft);
+    letter-spacing: 0.06em;
+    margin-bottom: 0.75rem;
+  }
+  .field { margin-bottom: 1rem; }
+  .field:last-child { margin-bottom: 0; }
+  label {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--text);
+    margin-bottom: 0.35rem;
+  }
+  .hint {
+    font-size: 0.75rem;
+    color: var(--text-soft);
+    margin-top: 0.2rem;
+  }
+  select, input[type="range"], input[type="text"], input[type="password"], textarea {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--card-line);
+    border-radius: 0.6rem;
+    background: var(--input-bg);
+    font-size: 0.9rem;
+    color: var(--text);
+    font-family: inherit;
+  }
+  textarea {
+    min-height: 7rem; resize: vertical; line-height: 1.5;
+  }
+  textarea.prompt-box {
+    min-height: 14rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.76rem;
+    line-height: 1.45;
+  }
+  select:focus, input[type="text"]:focus, input[type="password"]:focus, textarea:focus {
+    outline: 2px solid var(--accent); outline-offset: -2px;
+  }
+  .key-row { display: flex; gap: 0.5rem; align-items: center; }
+  .key-row input { flex: 1; min-width: 0; }
+  .key-toggle {
+    flex: 0 0 auto;
+    padding: 0.5rem 0.8rem;
+    border: 1px solid var(--card-line);
+    border-radius: 0.6rem;
+    background: var(--card-bg);
+    color: var(--text);
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .range-row { display: flex; align-items: center; gap: 0.75rem; }
+  .range-row input[type="range"] { flex: 1; }
+  .range-val {
+    font-size: 0.9rem; font-weight: 600; color: var(--accent);
+    min-width: 2.5rem; text-align: right;
+  }
+  .city-picker { position: relative; }
+  .city-panel {
+    display: none;
+    margin-top: 0.4rem;
+    border: 1px solid var(--card-line);
+    border-radius: 0.75rem;
+    background: var(--input-bg);
+    overflow: hidden;
+  }
+  .city-panel.open { display: block; }
+  .city-panel-head {
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 0.4rem 0.5rem 0.4rem 0.7rem;
+    border-bottom: 1px solid var(--card-line);
+  }
+  .city-crumbs {
+    flex: 1; min-width: 0;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 0.15rem;
+    font-size: 0.78rem; color: var(--text-soft);
+  }
+  .city-crumb {
+    border: 0; background: transparent; color: var(--accent);
+    font: inherit; font-size: 0.78rem; cursor: pointer; padding: 0 0.1rem;
+  }
+  .city-crumb.current { color: var(--text); cursor: default; }
+  .city-crumb-sep { color: var(--text-faint); font-size: 0.7rem; }
+  .city-close {
+    border: 0; background: transparent; color: var(--text-soft);
+    font-size: 1.1rem; line-height: 1; cursor: pointer; padding: 0 0.15rem;
+    font-family: inherit;
+  }
+  .city-search { padding: 0.45rem 0.6rem; border-bottom: 1px solid var(--card-line); }
+  .city-search input { padding: 0.35rem 0.55rem; font-size: 0.82rem; }
+  .city-list { max-height: 16rem; overflow-y: auto; padding: 0.3rem 0.4rem 0.5rem; }
+  .city-row {
+    display: flex; align-items: baseline; gap: 0.4rem;
+    width: 100%; text-align: left;
+    border: 0; background: transparent; color: var(--text);
+    font: inherit; padding: 0.38rem 0.45rem; border-radius: 0.5rem; cursor: pointer;
+  }
+  .city-row:hover { background: var(--row-press); }
+  .city-row .sub { font-size: 0.72rem; color: var(--text-faint); }
+  .city-row .sub.strong { color: var(--accent); }
+  .city-empty { padding: 0.6rem 0.45rem; font-size: 0.8rem; color: var(--text-faint); }
+
+  /* ── API 配置库选择器 ── */
+  .api-profiles { margin-bottom: 1rem; }
+  .ap-head { display: flex; align-items: center; gap: 0.5rem; }
+  .ap-current {
+    flex: 1; min-width: 0;
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--card-line); border-radius: 0.6rem;
+    background: var(--input-bg); color: var(--text);
+    font: inherit; cursor: pointer; text-align: left;
+  }
+  .ap-current .ap-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ap-current .ap-sub { font-size: 0.75rem; color: var(--text-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ap-chev { margin-left: auto; width: 16px; height: 16px; opacity: .45; transition: transform .18s ease; flex: 0 0 auto; }
+  .ap-current[aria-expanded="true"] .ap-chev { transform: rotate(90deg); opacity: .85; }
+  .ap-add {
+    flex: 0 0 auto;
+    padding: 0.5rem 0.8rem;
+    border: 1px solid var(--card-line); border-radius: 0.6rem;
+    background: var(--card-bg); color: var(--text);
+    font: inherit; cursor: pointer;
+  }
+  .ap-add:hover { background: var(--row-press); }
+  .ap-panel {
+    display: none; margin-top: 0.4rem;
+    border: 1px solid var(--card-line); border-radius: 0.75rem;
+    background: var(--input-bg); overflow: hidden;
+  }
+  .ap-panel.open { display: block; }
+  .ap-list { max-height: 14rem; overflow-y: auto; padding: 0.3rem; }
+  .ap-item {
+    display: flex; align-items: baseline; gap: 0.45rem;
+    width: 100%; text-align: left;
+    border: 0; background: transparent; color: var(--text);
+    font: inherit; padding: 0.45rem 0.55rem; border-radius: 0.5rem; cursor: pointer;
+  }
+  .ap-item:hover { background: var(--row-press); }
+  .ap-item.active { background: rgba(76, 99, 120, .12); }
+  .ap-item .ap-item-name { font-weight: 600; }
+  .ap-item .ap-item-sub { font-size: 0.72rem; color: var(--text-faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ap-tag {
+    font-size: 0.66rem; color: var(--text-faint);
+    border: 1px solid var(--card-line); border-radius: 999px; padding: 0 0.35rem;
+    flex: 0 0 auto;
+  }
+  .ap-tag.current { color: var(--accent); border-color: var(--accent); }
+  .ap-form .ap-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.3rem; }
+  .ap-form .ap-actions .btn { padding: 0.45rem 1rem; font-size: 0.85rem; }
+  .ap-form .ap-actions .btn[disabled] { opacity: .4; cursor: not-allowed; }
+  .ap-status { min-height: 1em; margin-top: 0.4rem; }
+
+  .ap-picker label { display: block; font-size: 0.9rem; margin-bottom: 0.35rem; }
+  .ap-empty { padding: 0.6rem 0.45rem; font-size: 0.8rem; color: var(--text-faint); }
+  .ap-lib-list { display: flex; flex-direction: column; gap: 0.5rem; }
+  .ap-lib-item {
+    border: 1px solid var(--card-line); border-radius: 0.75rem;
+    padding: 0.55rem 0.7rem; background: var(--input-bg);
+  }
+  .ap-lib-main { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem; }
+  .ap-lib-sub { font-size: 0.72rem; color: var(--text-faint); margin-top: 0.15rem; overflow-wrap: anywhere; }
+  .ap-lib-acts { display: flex; gap: 0.4rem; margin-top: 0.4rem; }
+  .ap-lib-acts .btn { padding: 0.3rem 0.8rem; font-size: 0.8rem; }
+  .ap-lib-acts .btn[disabled] { opacity: .4; cursor: not-allowed; }
+  .ap-lib-actions { margin-top: 0.6rem; }
+  .ap-lib-form { margin-top: 0.9rem; border-top: 1px solid var(--card-line); padding-top: 0.8rem; }
+
+  .save-bar { display: flex; gap: 0.75rem; margin-top: 1.25rem; flex-wrap: wrap; }
+  .btn {
+    padding: 0.65rem 1.5rem;
+    border: 1px solid var(--card-line);
+    border-radius: 2rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.2s;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  .btn-primary:hover { opacity: 0.88; }
+  .btn-ghost { background: var(--card-bg); color: var(--text); }
+  .btn-ghost:hover { background: var(--row-press); }
+  .toast {
+    position: fixed; bottom: 2rem; left: 50%;
+    transform: translateX(-50%);
+    background: var(--text); color: var(--bg);
+    padding: 0.6rem 1.4rem; border-radius: 2rem;
+    font-size: 0.85rem; opacity: 0; transition: opacity 0.3s;
+    pointer-events: none; z-index: 20;
+  }
+  .toast.show { opacity: 1; }
+  .toggle-row {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 1rem; cursor: pointer;
+  }
+  .toggle-title { font-size: 0.95rem; color: var(--text); }
+  .toggle-row input[type="checkbox"] {
+    width: 1.15rem; height: 1.15rem; margin-top: 0.2rem;
+    flex-shrink: 0; accent-color: var(--accent);
+  }
+  .choice-row {
+    display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; margin-bottom: 1rem;
+  }
+  .choice-row label {
+    display: flex; align-items: center; gap: 0.4rem;
+    margin: 0; font-size: 0.9rem; cursor: pointer;
+  }
+  .choice-row input[type="radio"] {
+    width: 1rem; height: 1rem; accent-color: var(--accent);
+  }
+  .brain-slot {
+    border: 1px solid var(--card-line);
+    border-radius: 0.75rem;
+    padding: 0.9rem 0.9rem 0.35rem;
+    margin-bottom: 0.85rem;
+    background: color-mix(in srgb, var(--input-bg) 70%, transparent);
+  }
+  .brain-slot.active-slot {
+    outline: 2px solid var(--accent);
+    outline-offset: 0;
+  }
+  .slot-title {
+    font-size: 0.82rem; font-weight: 600; color: var(--accent);
+    margin-bottom: 0.65rem;
+  }
+  .footer {
+    text-align: center; margin-top: 2rem;
+    color: var(--text-soft); font-size: 0.8rem; opacity: 0.5;
+  }
+  .page-hint {
+    font-size: 0.78rem; color: var(--text-soft);
+    margin: -0.4rem 0 1rem;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <a class="back-btn" href="/#home" title="返回主页">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+  </a>
+  <h1>设置</h1>
+  <button type="button" class="theme-pill" id="themePill" title="切换日夜（与聊天页同步）">日间</button>
+</div>
+<p class="page-hint">卡片默认折叠，点标题展开；带开关的项关了就不耗对应 token。一次只开一张卡。</p>
+
+<section class="card" data-acc="apilibrary">
+  <button type="button" class="acc-head" aria-expanded="false">
+    <span class="card-title">🔑 API 设置库</span>
+    <svg class="acc-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+  </button>
+  <div class="acc-body">
+    <div id="apiLibrary"></div>
+  </div>
+</section>
+
+<section class="card" data-acc="chat">
+  <button type="button" class="acc-head" aria-expanded="false">
+    <span class="card-title">💬 聊天大脑</span>
+    <svg class="acc-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+  </button>
+  <div class="acc-body">
+  <p class="hint" style="margin-bottom:0.75rem;">配置库<strong>全局共享</strong>。这里选中哪一路，聊天就只走哪一路（不会两路同时答）。新增 / 修改配置请到上面的「API 设置库」。</p>
+  <div class="api-profiles" data-scope="chat"></div>
+  <div class="field">
+    <label>思考力度 thinking_effort</label>
+    <div class="choice-row" id="thinkingEffortRow">
+      <label data-effort="minimal"><input type="radio" name="thinkingEffort" value="minimal"> minimal <span class="hint">(仅 3.6)</span></label>
+      <label><input type="radio" name="thinkingEffort" value="low" checked> low</label>
+      <label><input type="radio" name="thinkingEffort" value="medium"> medium</label>
+      <label><input type="radio" name="thinkingEffort" value="high"> high</label>
+    </div>
+    <div class="hint">控制 Gemini 3.x 的 <code>thinking_level</code>。有可读思考摘要时聊天页会出 thinking 气泡；没字就不显示。</div>
+    <div class="hint">仅当「当前使用」是 Google 原生 Gemini 时生效；OpenAI 兼容配置会忽略。minimal 仅 Gemini 3.6 可选。</div>
+  </div>
+  <div class="field">
+    <label for="temperature">回复温度 Temperature</label>
+    <div class="range-row">
+      <input type="range" id="temperature" min="0.0" max="1.5" step="0.1" value="0.7">
+      <span class="range-val" id="temperatureVal">0.7</span>
+    </div>
+    <div class="hint">低=更稳定，高=更有创意。</div>
+  </div>
+  <div class="field">
+    <label for="maxTokens">最大回复长度 Max Tokens</label>
+    <div class="range-row">
+      <input type="range" id="maxTokens" min="256" max="2048" step="64" value="512">
+      <span class="range-val" id="maxTokensVal">512</span>
+    </div>
+    <div class="hint">只限制聊天大脑输出。默认 512（大约 400～500 字）。不要贴死到 256：工具 JSON 和 3.x MINIMAL 思考会占额度。日常短聊把滑块往低处拉即可。</div>
+  </div>
+  <div class="field">
+    <label for="historyNMax">对话历史上限 History N max</label>
+    <div class="range-row">
+      <input type="range" id="historyNMax" min="1" max="50" step="1" value="12">
+      <span class="range-val" id="historyNMaxVal">12</span>
+    </div>
+  </div>
+  <div class="field">
+    <label for="historyNMin">对话历史下限 History N min</label>
+    <div class="range-row">
+      <input type="range" id="historyNMin" min="1" max="50" step="1" value="12">
+      <span class="range-val" id="historyNMinVal">12</span>
+    </div>
+    <div class="hint">一轮 = 一问一答。两值相等 = 每轮丢掉最老一轮（滑窗）。与「今日事件线」不是同一回事。</div>
+  </div>
+  <div class="field">
+    <label for="persona">自定义人设 Persona</label>
+    <textarea id="persona" placeholder="你是对方的 AI 助手，在一个私密的一对一聊天里。说话自然、简短、有温度……"></textarea>
+    <div class="hint">即时修改性格设定，保存后下一条回复生效。</div>
+  </div>
+  <div class="field">
+    <label for="outputStyle">输出风格 Output Style</label>
+    <textarea id="outputStyle" style="min-height:12rem;" placeholder="【输出风格】&#10;自然 > 完整&#10;反应 > 分析&#10;……"></textarea>
+    <div class="hint">默认已填入内置风格文本；清空后保存仍回到这个默认。保存后下一条回复生效。</div>
+  </div>
+  </div>
+</section>
+
+<section class="card" data-acc="memory">
+  <button type="button" class="acc-head" aria-expanded="false">
+    <span class="card-title">🧠 记忆提炼流水线</span>
+    <svg class="acc-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+  </button>
+  <div class="acc-body">
+  <div class="api-profiles" data-scope="memory"></div>
+  <p class="hint" style="margin-top:0;">不选独立配置时默认<strong>跟随聊天大脑</strong>；选了就以选中的那套为准。留空/取消选择可回到跟随。</p>
+  <div class="field">
+    <label for="scribeMin">全局提取门槛（条）</label>
+    <div class="range-row">
+      <input type="range" id="scribeMin" min="3" max="80" value="25">
+      <span class="range-val" id="scribeMinVal">25</span>
+    </div>
+    <div class="hint">攒够这么多条新消息后才提取。默认 25。</div>
+  </div>
+  <div class="field">
+    <label for="scribeSilence">静默提取等待（分钟）</label>
+    <div class="range-row">
+      <input type="range" id="scribeSilence" min="5" max="120" value="20">
+      <span class="range-val" id="scribeSilenceVal">20</span>
+    </div>
+    <div class="hint">停聊这么久后才提取。默认 20 分钟。</div>
+  </div>
+  </div>
+</section>
+
+<section class="card" data-acc="weather">
+  <div class="acc-head">
+    <button type="button" class="acc-open" aria-expanded="false">
+      <span class="card-title">☁ 天气</span>
+      <svg class="acc-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+    </button>
+    <label class="acc-switch" title="开启/关闭">
+      <input type="checkbox" id="featureWeather" checked>
+      <span></span>
+    </label>
+  </div>
+  <div class="acc-body">
+    <p class="hint" style="margin-bottom:0.75rem;">关：不注入 [天气]、不刷缓存、不提供查天气工具。聊天照常，固化不受影响。</p>
+    <div class="field">
+      <label for="weatherCity">城市 City</label>
+      <div class="city-picker">
+        <input type="text" id="weatherCity" value="北京" placeholder="点击选择 省 / 市 / 区县，也可以直接输入" autocomplete="off">
+        <div class="city-panel" id="weatherCityPanel">
+          <div class="city-panel-head">
+            <div class="city-crumbs" id="weatherCityCrumbs"></div>
+            <button type="button" class="city-close" id="weatherCityClose" aria-label="关闭">×</button>
+          </div>
+          <div class="city-search">
+            <input type="text" id="weatherCitySearch" placeholder="搜索省 / 市 / 区县，如：甘井子" autocomplete="off">
+          </div>
+          <div class="city-list" id="weatherCityList"></div>
+        </div>
+      </div>
+      <div class="hint">按「省 → 市 → 区县」逐级选择；天气按所选地点查询（wttr.in），默认北京。保存后约 1 分钟内生效。</div>
+    </div>
+  </div>
+</section>
+
+<section class="card" data-acc="voyage">
+  <div class="acc-head">
+    <button type="button" class="acc-open" aria-expanded="false">
+      <span class="card-title">航海日志</span>
+      <svg class="acc-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+    </button>
+    <label class="acc-switch" title="开启/关闭">
+      <input type="checkbox" id="featureVoyage" checked>
+      <span></span>
+    </label>
+  </div>
+  <div class="acc-body">
+    <p class="hint" style="margin-bottom:0.75rem;">关：不调航海 LLM，固化仍推进。API 与积温 / 事件线<strong>完全独立</strong>，选中的这套只服务航海日志。</p>
+    <div class="api-profiles" data-scope="voyage"></div>
+    <div class="field">
+      <label for="voyagePrompt">提示词</label>
+      <textarea id="voyagePrompt" class="prompt-box" spellcheck="false"></textarea>
+      <div class="hint">占位符请保留：<code>{{dateDisplay}}</code> <code>{{roundStart}}</code> <code>{{roundEnd}}</code> <code>{{startTime}}</code> <code>{{endTime}}</code> <code>{{conversationText}}</code>，以及 <code>{{user.name}}</code> 等。</div>
+    </div>
+    <button type="button" class="btn btn-ghost" id="resetVoyagePrompt">恢复默认提示词</button>
+  </div>
+</section>
+
+<section class="card" data-acc="daily">
+  <div class="acc-head">
+    <button type="button" class="acc-open" aria-expanded="false">
+      <span class="card-title">今日事件线</span>
+      <svg class="acc-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+    </button>
+    <label class="acc-switch" title="开启/关闭">
+      <input type="checkbox" id="featureDaily" checked>
+      <span></span>
+    </label>
+  </div>
+  <div class="acc-body">
+    <p class="hint" style="margin-bottom:0.75rem;">关：完全不提取事件线。后台独立按「几轮一次」写，与固化<strong>彻底解耦</strong>，失败不影响聊天。</p>
+    <div class="field">
+      <label for="dailyInterval">事件线周期：<span id="dailyIntervalVal">10</span> 轮一次</label>
+      <input type="range" id="dailyInterval" min="5" max="50" step="1" value="10">
+    </div>
+    <div class="api-profiles" data-scope="daily"></div>
+    <div class="field">
+      <label for="dailyPrompt">提示词</label>
+      <textarea id="dailyPrompt" class="prompt-box" spellcheck="false"></textarea>
+      <div class="hint">占位符：<code>{{logicalDate}}</code> <code>{{endTime}}</code> <code>{{windowHours}}</code> <code>{{volumeBlocks}}</code>。</div>
+    </div>
+    <button type="button" class="btn btn-ghost" id="resetDailyPrompt">恢复默认提示词</button>
+  </div>
+</section>
+
+<section class="card" data-acc="affect">
+  <div class="acc-head">
+    <button type="button" class="acc-open" aria-expanded="false">
+      <span class="card-title">🌊 情绪分析（积温）</span>
+      <svg class="acc-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+    </button>
+    <label class="acc-switch" title="积温总闸">
+      <input type="checkbox" id="featureAffect" checked>
+      <span></span>
+    </label>
+  </div>
+  <div class="acc-body">
+  <p class="hint" style="margin-bottom:0.75rem;">总闸关：分析与语调都不跑。API <strong>只服务积温</strong>，不会改航海 / 事件线。</p>
+  <div class="field">
+    <label class="toggle-row" for="affectAnalyzeEnabled">
+      <span>
+        <span class="toggle-title">启用情绪分析</span>
+        <span class="hint" style="display:block;margin:0.2rem 0 0;">每轮用选中的配置算五轴 delta。关掉后 tick 仍跑，但不调 LLM。默认关。</span>
+      </span>
+      <input type="checkbox" id="affectAnalyzeEnabled">
+    </label>
+  </div>
+  <div class="field">
+    <label class="toggle-row" for="affectToneEnabled">
+      <span>
+        <span class="toggle-title">启用语调染色</span>
+        <span class="hint" style="display:block;margin:0.2rem 0 0;">把当前情绪状态写入提示词，影响回复语气。与分析分开；建议先开分析观察两天再开染色。</span>
+      </span>
+      <input type="checkbox" id="affectToneEnabled">
+    </label>
+  </div>
+  <div class="api-profiles" data-scope="affect"></div>
+  <div class="field">
+    <label for="affectPrompt">分析提示词（可选）</label>
+    <textarea id="affectPrompt" class="prompt-box" spellcheck="false"></textarea>
+    <div class="hint">默认已填入内置中性模板；清空保存 = 回到内置默认。保存后下一轮生效。想复刻自己的风格，直接在这份模板上改。</div>
+  </div>
+  <button type="button" class="btn btn-ghost" id="resetAffectPrompt">恢复默认提示词</button>
+  </div>
+</section>
+
+<section class="card" data-acc="features">
+  <button type="button" class="acc-head" aria-expanded="false">
+    <span class="card-title">🎛 其它功能开关</span>
+    <svg class="acc-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+  </button>
+  <div class="acc-body">
+    <div class="field">
+      <label class="toggle-row" for="featureMemInject">
+        <span>
+          <span class="toggle-title">相关记忆注入</span>
+          <span class="hint" style="display:block;margin:0.2rem 0 0;">关：每轮不再自动检索/注入相关记忆。记忆库与手查工具仍可用。</span>
+        </span>
+        <input type="checkbox" id="featureMemInject" checked>
+      </label>
+    </div>
+    <div class="field">
+      <label class="toggle-row" for="featureSchedInject">
+        <span>
+          <span class="toggle-title">日程注入</span>
+          <span class="hint" style="display:block;margin:0.2rem 0 0;">关：聊天/固化不贴 [日程]。已有日程仍可手改。</span>
+        </span>
+        <input type="checkbox" id="featureSchedInject" checked>
+      </label>
+    </div>
+    <div class="field">
+      <label class="toggle-row" for="featureSchedParse">
+        <span>
+          <span class="toggle-title">日程解析</span>
+          <span class="hint" style="display:block;margin:0.2rem 0 0;">关：自然语言解析不调模型。手动建日程仍可用。</span>
+        </span>
+        <input type="checkbox" id="featureSchedParse" checked>
+      </label>
+    </div>
+    <div class="field">
+      <label class="toggle-row" for="featureGrounding">
+        <span>
+          <span class="toggle-title">联网搜索</span>
+          <span class="hint" style="display:block;margin:0.2rem 0 0;">关：不挂 Google Search（仍受服务端环境开关约束）。</span>
+        </span>
+        <input type="checkbox" id="featureGrounding" checked>
+      </label>
+    </div>
+    <div class="field">
+      <label class="toggle-row" for="featureSelfWake">
+        <span>
+          <span class="toggle-title">自醒</span>
+          <span class="hint" style="display:block;margin:0.2rem 0 0;">关：不到点开自醒回合，也不提供设醒工具。与主动关怀无关。</span>
+        </span>
+        <input type="checkbox" id="featureSelfWake" checked>
+      </label>
+    </div>
+  </div>
+</section>
+
+<section class="card" data-acc="care">
+  <button type="button" class="acc-head" aria-expanded="false">
+    <span class="card-title">🔔 关怀与通知</span>
+    <svg class="acc-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+  </button>
+  <div class="acc-body">
+  <div class="field">
+    <label class="toggle-row" for="proactiveEnabled">
+      <span>
+        <span class="toggle-title">主动关怀</span>
+        <span class="hint" style="display:block;margin:0.2rem 0 0;">离开一段时间后，按积温发轻量问候。</span>
+      </span>
+      <input type="checkbox" id="proactiveEnabled" checked>
+    </label>
+  </div>
+  <div class="field">
+    <label class="toggle-row" for="notificationPrivacy">
+      <span>
+        <span class="toggle-title">通知隐私模式</span>
+        <span class="hint" style="display:block;margin:0.2rem 0 0;">开启后锁屏横幅只显示「Tidal / [收到一条新消息]」，不泄露聊天原文。</span>
+      </span>
+      <input type="checkbox" id="notificationPrivacy" checked>
+    </label>
+  </div>
+  <div class="field">
+    <button type="button" class="btn" id="proactiveNowBtn" style="width:100%">发一条主动关怀（进聊天 + 推送）</button>
+    <div class="hint" id="proactiveNowHint">绕过「在线不发」规则，立刻生成 1～2 条短句。可用于测试主动推送服务。</div>
+  </div>
+  </div>
+</section>
+
+<section class="card" data-acc="security">
+  <button type="button" class="acc-head" aria-expanded="false">
+    <span class="card-title">🔐 访问安全</span>
+    <svg class="acc-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+  </button>
+  <div class="acc-body">
+  <div class="field">
+    <label for="relaySecret">连接密钥</label>
+    <input type="password" id="relaySecret" value="" placeholder="留空则不修改" autocomplete="new-password">
+    <div class="hint">即 PWA 登录页的连接密钥（RELAY_SECRET）。仅改此项需要重启服务后用新密钥登录；改 Key / Base / 模型保存后下一条生效。</div>
+  </div>
+  </div>
+</section>
+
+<div class="save-bar">
+  <button class="btn btn-primary" id="saveBtn">保存设置</button>
+  <button class="btn btn-ghost" id="resetBtn">恢复默认</button>
+</div>
+<div class="save-bar">
+  <button class="btn btn-ghost" id="testChatBtn">测试聊天连接</button>
+  <button class="btn btn-ghost" id="testMemoryBtn">测试记忆连接</button>
+  <button class="btn btn-ghost" id="testAffectBtn">测试情绪分析连接</button>
+</div>
+<p class="hint" style="margin-top:0.4rem;">先保存再测。通过=上游能应答；失败会写明连不上还是配置不齐，保存成功不等于网络通。</p>
+
+<div class="toast" id="toast"></div>
+<div class="footer">Tidal — Settings</div>
+
+<script>
+(function () {
+  const a = document.querySelector("a.back-btn");
+  if (!a) return;
+  a.addEventListener("click", (e) => {
+    e.preventDefault();
+    let sameHome = false;
+    try {
+      const u = new URL(document.referrer);
+      sameHome = u.origin === location.origin && (/\/$/.test(u.pathname) || /\/index\.html$/.test(u.pathname));
+    } catch (_) {}
+    if (sameHome && history.length > 1) history.back();
+    else location.replace("/#home");
+  });
+})();
+const API_BASE = "";
+const TOKEN_KEY = "companion_secret";
+const KEY_MASK = "***已配置***";
+let promptDefaults = { voyageDefault: "", dailyDefault: "", affectDefault: "" };
+
+// ── 城市选择：省 → 市 → 区县（数据在 js/china-regions.json，首次点开才加载）──
+let regionData = null;
+let regionLoadPromise = null;
+let regionState = { province: null, city: null };
+
+async function loadRegions() {
+  if (regionData) return regionData;
+  if (!regionLoadPromise) {
+    regionLoadPromise = fetch("js/china-regions.json", { cache: "force-cache" })
+      .then((r) => {
+        if (!r.ok) throw new Error("regions " + r.status);
+        return r.json();
+      })
+      .then((d) => {
+        regionData = d;
+        return d;
+      })
+      .catch((e) => {
+        regionLoadPromise = null;
+        throw e;
+      });
+  }
+  return regionLoadPromise;
+}
+
+(function initWeatherCityPicker() {
+  const input = document.getElementById("weatherCity");
+  const panel = document.getElementById("weatherCityPanel");
+  const listEl = document.getElementById("weatherCityList");
+  const crumbsEl = document.getElementById("weatherCityCrumbs");
+  const searchEl = document.getElementById("weatherCitySearch");
+  const closeBtn = document.getElementById("weatherCityClose");
+  if (!input || !panel || !listEl) return;
+
+  function hide() {
+    panel.classList.remove("open");
+  }
+
+  function isOpen() {
+    return panel.classList.contains("open");
+  }
+
+  function setSelection(province, city, area) {
+    const cityName = city && !city.direct ? city.name : null;
+    const names = [province && province.name, cityName, area]
+      .filter(Boolean)
+      .filter((n, i, arr) => i === 0 || n !== arr[i - 1]);
+    const display = names.join(" ");
+    input.value = display;
+    input.dataset.query = area || (city && city.name) || (province && province.name) || "";
+    input.dataset.path = display;
+    if (province) {
+      regionState = { province, city: city || null };
+    }
+    if (searchEl) searchEl.value = "";
+    hide();
+    input.blur();
+  }
+
+  function addCrumb(label, onClick, current) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "city-crumb" + (current ? " current" : "");
+    btn.textContent = label;
+    if (onClick && !current) btn.addEventListener("click", onClick);
+    crumbsEl.appendChild(btn);
+  }
+
+  function paintCrumbs() {
+    crumbsEl.innerHTML = "";
+    const { province, city } = regionState;
+    addCrumb("全国", () => {
+      regionState = { province: null, city: null };
+      searchEl.value = "";
+      paint();
+    }, !province);
+    if (!province) return;
+    crumbsEl.insertAdjacentHTML("beforeend", '<span class="city-crumb-sep">›</span>');
+    const skipCity = city && city.name === province.name;
+    addCrumb(province.name, () => {
+      regionState = { province, city: skipCity ? city : null };
+      searchEl.value = "";
+      paint();
+    }, skipCity || !city);
+    if (city && !skipCity) {
+      crumbsEl.insertAdjacentHTML("beforeend", '<span class="city-crumb-sep">›</span>');
+      addCrumb(city.name, null, true);
+    }
+  }
+
+  function empty(text) {
+    const div = document.createElement("div");
+    div.className = "city-empty";
+    div.textContent = text;
+    listEl.appendChild(div);
+  }
+
+  function row(main, sub, onClick, strong) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "city-row";
+    const span = document.createElement("span");
+    span.textContent = main;
+    btn.appendChild(span);
+    if (sub) {
+      const tag = document.createElement("span");
+      tag.className = "sub" + (strong ? " strong" : "");
+      tag.textContent = "· " + sub;
+      btn.appendChild(tag);
+    }
+    btn.addEventListener("click", onClick);
+    listEl.appendChild(btn);
+  }
+
+  function paint() {
+    if (!regionData) {
+      listEl.innerHTML = "";
+      empty("加载中…");
+      return;
+    }
+    paintCrumbs();
+    listEl.innerHTML = "";
+    const { province, city } = regionState;
+    if (!province) {
+      const provinces = regionData.provinces || [];
+      if (!provinces.length) return empty("城市数据为空，请重新生成 china-regions.json");
+      provinces.forEach((p) => {
+        row(p.name, "", () => {
+          regionState = {
+            province: p,
+            // 直辖市：只有一个同名「市」，直接进区县
+            city: p.cities.length === 1 && p.cities[0].name === p.name ? p.cities[0] : null,
+          };
+          searchEl.value = "";
+          paint();
+        });
+      });
+      return;
+    }
+    if (!city) {
+      province.cities.forEach((c) => {
+        row(c.name, "", () => {
+          if (c.areas && c.areas.length) {
+            regionState = { province, city: c };
+            searchEl.value = "";
+            paint();
+          } else {
+            setSelection(province, c, null);
+          }
+        });
+      });
+      return;
+    }
+    if (city.areas && city.areas.length) {
+      if (!city.direct) row(`整个${city.name}`, "", () => setSelection(province, city, null), true);
+      city.areas.forEach((a) => row(a, "", () => setSelection(province, city, a)));
+    } else {
+      row(`整个${city.name}`, "", () => setSelection(province, city, null), true);
+    }
+  }
+
+  function paintSearch(query) {
+    if (!regionData) return;
+    listEl.innerHTML = "";
+    const q = String(query || "").trim();
+    if (!q) {
+      paint();
+      return;
+    }
+    const results = [];
+    const limit = 300;
+    for (const p of regionData.provinces) {
+      if (results.length >= limit) break;
+      if (p.name.includes(q)) {
+        results.push({ kind: "province", province: p });
+        continue;
+      }
+      for (const c of p.cities) {
+        if (results.length >= limit) break;
+        if (c.name.includes(q)) results.push({ kind: "city", province: p, city: c });
+        for (const a of c.areas || []) {
+          if (results.length >= limit) break;
+          if (a.includes(q)) results.push({ kind: "area", province: p, city: c, area: a });
+        }
+      }
+    }
+    if (!results.length) {
+      empty("没有匹配的省 / 市 / 区县，直接输入也可以");
+      return;
+    }
+    results.forEach((r) => {
+      if (r.kind === "province") {
+        row(r.province.name, "省 / 直辖市", () => {
+          regionState = { province: r.province, city: r.province.cities.length === 1 && r.province.cities[0].name === r.province.name ? r.province.cities[0] : null };
+          searchEl.value = "";
+          paint();
+        });
+      } else if (r.kind === "city") {
+        const cityName = r.city.direct ? null : r.city.name;
+        const path = [r.province.name, cityName].filter((n, i, arr) => n && (i === 0 || n !== arr[i - 1])).join(" ");
+        row(r.city.name, path, () => {
+          if (r.city.areas && r.city.areas.length) {
+            regionState = { province: r.province, city: r.city };
+            searchEl.value = "";
+            paint();
+          } else {
+            setSelection(r.province, r.city, null);
+          }
+        });
+      } else {
+        row(r.area, `${r.province.name} ${r.city.name}`, () => setSelection(r.province, r.city, r.area));
+      }
+    });
+    if (results.length >= limit) empty("结果太多，请输入更具体的关键词");
+  }
+
+  async function open() {
+    panel.classList.add("open");
+    if (searchEl) searchEl.value = "";
+    if (regionData) {
+      paint();
+      return;
+    }
+    listEl.innerHTML = "";
+    empty("加载中…");
+    try {
+      await loadRegions();
+      paint();
+    } catch (e) {
+      listEl.innerHTML = "";
+      empty("城市数据加载失败，刷新页面重试；也可以直接输入城市名");
+    }
+  }
+
+  input.addEventListener("focus", () => {
+    if (!isOpen()) open();
+  });
+  input.addEventListener("click", () => {
+    if (!isOpen()) open();
+  });
+  input.addEventListener("input", () => {
+    // 手输 = 不用路径，按输入内容查
+    delete input.dataset.query;
+    delete input.dataset.path;
+    hide();
+  });
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      hide();
+      input.blur();
+    }
+  });
+  if (searchEl) {
+    searchEl.addEventListener("input", () => paintSearch(searchEl.value));
+    searchEl.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        hide();
+        input.blur();
+        return;
+      }
+      if (e.key === "Enter") {
+        const first = listEl.querySelector(".city-row");
+        if (first) {
+          e.preventDefault();
+          first.click();
+        }
+      }
+    });
+  }
+  if (closeBtn) {
+    closeBtn.addEventListener("click", () => {
+      hide();
+      input.blur();
+    });
+  }
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".city-picker")) hide();
+  });
+  // 列表会重绘（旧节点被移除），点外面关闭的判断不能依赖重绘后的节点关系
+  panel.addEventListener("click", (e) => e.stopPropagation());
+})();
+
+// ── API 配置库（全局共享；新增/编辑统一在「API 设置库」卡片里）──
+const API_UI = {};
+let apiProfiles = [];
+let apiActive = {};
+let apiProfilesReady = false;
+let apiLibraryUI = null;
+
+function apiHeaders(extra) {
+  return Object.assign({ Authorization: token() }, extra || {});
+}
+
+async function apiProfilesFetch() {
+  const r = await fetch(`${API_BASE}/app/api/profiles`, { headers: apiHeaders() });
+  if (!r.ok) throw new Error("读取配置库失败: " + r.status);
+  const d = await r.json();
+  applyApiState(d);
+}
+
+function applyApiState(d) {
+  apiProfiles = Array.isArray(d.profiles) ? d.profiles : [];
+  apiActive = d.active || {};
+  apiProfilesReady = true;
+  Object.keys(API_UI).forEach((scope) => API_UI[scope].render());
+  if (apiLibraryUI) apiLibraryUI.render();
+}
+
+async function apiProfilesCall(method, path, body) {
+  const r = await fetch(`${API_BASE}${path}`, {
+    method,
+    headers: apiHeaders({ "Content-Type": "application/json" }),
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  let data = null;
+  try { data = await r.json(); } catch (_) {}
+  if (!r.ok) {
+    const detail = data && data.detail;
+    throw new Error(typeof detail === "string" ? detail : `请求失败: ${r.status}`);
+  }
+  if (data && Array.isArray(data.profiles)) applyApiState(data);
+  return data;
+}
+
+function apiUsed(id) {
+  return Object.values(apiActive).includes(id);
+}
+
+function apiFind(id) {
+  return apiProfiles.find((p) => p.id === id) || null;
+}
+
+function apiScopeAllowed(scope, profile) {
+  if (scope === "chat") return true;
+  return (profile.protocol || "openai") === "openai";
+}
+
+function sortProfiles(list) {
+  return list.slice().sort((a, b) => {
+    const pa = a.protocol === "gemini" ? 0 : 1;
+    const pb = b.protocol === "gemini" ? 0 : 1;
+    if (pa !== pb) return pa - pb;
+    return String(a.created_at || "").localeCompare(String(b.created_at || ""));
+  });
+}
+
+function initScopePicker(scope, root) {
+  root.innerHTML = `
+  <div class="ap-picker">
+    <label>当前使用</label>
+    <button type="button" class="ap-current" aria-expanded="false">
+      <span class="ap-name">加载中…</span>
+      <span class="ap-sub"></span>
+      <svg class="ap-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+    </button>
+    <div class="ap-panel"><div class="ap-list"></div></div>
+    <div class="hint">新增 / 修改配置请到「API 设置库」。</div>
+  </div>`;
+
+  const els = {
+    current: root.querySelector(".ap-current"),
+    name: root.querySelector(".ap-name"),
+    sub: root.querySelector(".ap-sub"),
+    panel: root.querySelector(".ap-panel"),
+    list: root.querySelector(".ap-list"),
+  };
+
+  function closePanel() {
+    els.panel.classList.remove("open");
+    els.current.setAttribute("aria-expanded", "false");
+  }
+
+  function render() {
+    if (!apiProfilesReady) {
+      els.name.textContent = "加载中…";
+      els.sub.textContent = "";
+      return;
+    }
+    const cur = apiFind(apiActive[scope] || "");
+    if (scope === "memory" && !cur) {
+      els.name.textContent = "跟随聊天大脑";
+      els.sub.textContent = "不选独立配置";
+    } else if (cur) {
+      els.name.textContent = cur.name;
+      els.sub.textContent = (cur.model || "未填模型") + (cur.api_key ? "" : " · 缺 Key");
+    } else {
+      els.name.textContent = "未选择";
+      els.sub.textContent = "点这里挑一套配置";
+    }
+
+    els.list.innerHTML = "";
+    if (scope !== "chat") {
+      const none = document.createElement("button");
+      none.type = "button";
+      none.className = "ap-item" + (!(apiActive[scope] || "") ? " active" : "");
+      none.innerHTML = scope === "memory"
+        ? '<span class="ap-item-name">跟随聊天大脑</span><span class="ap-item-sub">不选独立配置</span>'
+        : '<span class="ap-item-name">不指定（留空）</span><span class="ap-item-sub">不使用这个能力的独立 API</span>';
+      none.addEventListener("click", () => choose(""));
+      els.list.appendChild(none);
+    }
+
+    sortProfiles(apiProfiles.filter((p) => apiScopeAllowed(scope, p))).forEach((p) => {
+      const isActive = p.id === (apiActive[scope] || "");
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "ap-item" + (isActive ? " active" : "");
+      const name = document.createElement("span");
+      name.className = "ap-item-name";
+      name.textContent = p.name;
+      const sub = document.createElement("span");
+      sub.className = "ap-item-sub";
+      sub.textContent = p.model || "未填模型";
+      btn.appendChild(name);
+      btn.appendChild(sub);
+      if (p.protocol === "gemini") {
+        const tag = document.createElement("span");
+        tag.className = "ap-tag";
+        tag.textContent = "原生";
+        btn.appendChild(tag);
+      }
+      if (isActive) {
+        const tag = document.createElement("span");
+        tag.className = "ap-tag current";
+        tag.textContent = "当前";
+        btn.appendChild(tag);
+      }
+      btn.addEventListener("click", () => choose(p.id));
+      els.list.appendChild(btn);
+    });
+
+    if (!apiProfiles.filter((p) => apiScopeAllowed(scope, p)).length) {
+      const empty = document.createElement("div");
+      empty.className = "ap-empty";
+      empty.textContent = "配置库还没有可用配置，去「API 设置库」新增。";
+      els.list.appendChild(empty);
+    }
+  }
+
+  async function choose(id) {
+    closePanel();
+    if (id === "") {
+      try {
+        await apiProfilesCall("POST", "/app/api/profiles/deactivate", { scope });
+        showToast(scope === "memory" ? "记忆流水线已跟随聊天大脑" : "已设为不指定");
+      } catch (e) {
+        showToast(e.message);
+      }
+      return;
+    }
+    if ((apiActive[scope] || "") !== id) {
+      try {
+        await apiProfilesCall("POST", `/app/api/profiles/${encodeURIComponent(id)}/activate`, { scope });
+        showToast("已切换");
+      } catch (e) {
+        showToast(e.message);
+      }
+    }
+    if (scope === "chat") refreshThinkingEffort();
+  }
+
+  els.current.addEventListener("click", () => {
+    if (els.panel.classList.contains("open")) closePanel();
+    else {
+      els.panel.classList.add("open");
+      els.current.setAttribute("aria-expanded", "true");
+    }
+  });
+  document.addEventListener("click", (e) => {
+    if (!root.contains(e.target)) closePanel();
+  });
+
+  API_UI[scope] = { render };
+  render();
+}
+
+function initApiLibrary(root) {
+  root.innerHTML = `
+  <p class="hint" style="margin-bottom:0.75rem;">所有板块共用这一份配置库。新增时先选类型：OpenAI 兼容（所有板块可用）或 Google 原生 Gemini（仅聊天大脑可选）。</p>
+  <div class="ap-lib-list"></div>
+  <div class="ap-lib-actions">
+    <button type="button" class="btn btn-primary ap-lib-add">＋ 新增配置</button>
+  </div>
+  <div class="ap-form ap-lib-form" hidden>
+    <div class="field">
+      <label>类型</label>
+      <select class="ap-f-type">
+        <option value="openai">OpenAI 兼容</option>
+        <option value="gemini">Google 原生 Gemini</option>
+      </select>
+      <div class="hint ap-type-hint"></div>
+    </div>
+    <div class="field">
+      <label>名称（给自己看）</label>
+      <input type="text" class="ap-f-name" placeholder="留空自动命名：兼容1 / 兼容2 …" autocomplete="off">
+    </div>
+    <div class="field">
+      <label>Base URL</label>
+      <input type="text" class="ap-f-base" autocomplete="off">
+    </div>
+    <div class="field">
+      <label>API Key</label>
+      <div class="key-row">
+        <input type="password" class="ap-f-key" placeholder="留空则保留原值" autocomplete="off">
+        <button type="button" class="key-toggle ap-f-reveal">显示</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Model</label>
+      <input type="text" class="ap-f-model" autocomplete="off">
+    </div>
+    <div class="ap-actions">
+      <button type="button" class="btn btn-primary ap-f-save">保存</button>
+      <button type="button" class="btn btn-ghost ap-f-cancel">取消</button>
+    </div>
+    <p class="hint ap-f-status"></p>
+  </div>`;
+
+  const els = {
+    list: root.querySelector(".ap-lib-list"),
+    add: root.querySelector(".ap-lib-add"),
+    form: root.querySelector(".ap-lib-form"),
+    type: root.querySelector(".ap-f-type"),
+    typeHint: root.querySelector(".ap-type-hint"),
+    name: root.querySelector(".ap-f-name"),
+    base: root.querySelector(".ap-f-base"),
+    key: root.querySelector(".ap-f-key"),
+    model: root.querySelector(".ap-f-model"),
+    reveal: root.querySelector(".ap-f-reveal"),
+    save: root.querySelector(".ap-f-save"),
+    cancel: root.querySelector(".ap-f-cancel"),
+    status: root.querySelector(".ap-f-status"),
+  };
+  let editingId = "";
+
+  const TYPE_DEFAULTS = {
+    openai: {
+      base: "https://api.deepseek.com",
+      model: "deepseek-chat",
+      hint: "OpenAI 兼容接口；聊天、记忆、航海、情绪、事件线、日程解析都能选。",
+    },
+    gemini: {
+      base: "https://generativelanguage.googleapis.com/v1beta",
+      model: "gemini-3.6-flash",
+      hint: "Google 原生协议（generateContent）；只有聊天大脑能看见并选择。",
+    },
+  };
+
+  function applyTypeDefaults() {
+    const d = TYPE_DEFAULTS[els.type.value] || TYPE_DEFAULTS.openai;
+    els.base.placeholder = d.base;
+    els.model.placeholder = d.model;
+    els.typeHint.textContent = d.hint;
+  }
+
+  function openForm(profile) {
+    editingId = profile ? profile.id : "";
+    els.form.hidden = false;
+    els.type.disabled = !!profile;
+    els.type.value = profile ? profile.protocol : "openai";
+    els.name.value = profile ? profile.name || "" : "";
+    els.base.value = profile ? profile.base_url || "" : "";
+    els.model.value = profile ? profile.model || "" : "";
+    els.key.value = profile ? profile.api_key || "" : "";
+    els.key.type = "password";
+    els.key.dataset.configured = profile && profile.api_key ? "1" : "";
+    els.reveal.textContent = "显示";
+    els.status.textContent = profile
+      ? (apiUsed(profile.id) ? "这套配置正在被使用。" : "")
+      : "留空名称会自动命名。";
+    applyTypeDefaults();
+    els.name.focus();
+  }
+
+  function closeForm() {
+    editingId = "";
+    els.form.hidden = true;
+  }
+
+  function render() {
+    if (!apiProfilesReady) {
+      els.list.innerHTML = '<div class="ap-empty">加载中…</div>';
+      return;
+    }
+    els.list.innerHTML = "";
+    if (!apiProfiles.length) {
+      els.list.innerHTML = '<div class="ap-empty">还没有配置，点下面新增一套。</div>';
+      return;
+    }
+    sortProfiles(apiProfiles).forEach((p) => {
+      const item = document.createElement("div");
+      item.className = "ap-lib-item";
+      const main = document.createElement("div");
+      main.className = "ap-lib-main";
+      const name = document.createElement("span");
+      name.className = "ap-item-name";
+      name.textContent = p.name;
+      main.appendChild(name);
+      const typeTag = document.createElement("span");
+      typeTag.className = "ap-tag" + (p.protocol === "gemini" ? "" : " current");
+      typeTag.textContent = p.protocol === "gemini" ? "Gemini 原生" : "OpenAI 兼容";
+      main.appendChild(typeTag);
+      if (apiUsed(p.id)) {
+        const usedTag = document.createElement("span");
+        usedTag.className = "ap-tag current";
+        usedTag.textContent = "使用中";
+        main.appendChild(usedTag);
+      }
+      const sub = document.createElement("div");
+      sub.className = "ap-lib-sub";
+      sub.textContent = `${p.model || "未填模型"} · ${p.base_url || "未填 Base URL"}${p.api_key ? "" : " · 缺 Key"}`;
+      const acts = document.createElement("div");
+      acts.className = "ap-lib-acts";
+      const edit = document.createElement("button");
+      edit.type = "button";
+      edit.className = "btn btn-ghost";
+      edit.textContent = "编辑";
+      edit.addEventListener("click", () => openForm(p));
+      const del = document.createElement("button");
+      del.type = "button";
+      del.className = "btn btn-ghost";
+      del.textContent = "删除";
+      del.disabled = apiUsed(p.id);
+      del.title = apiUsed(p.id) ? "正在使用中，先到对应板块切走再删" : "";
+      del.addEventListener("click", () => removeProfile(p));
+      acts.appendChild(edit);
+      acts.appendChild(del);
+      item.appendChild(main);
+      item.appendChild(sub);
+      item.appendChild(acts);
+      els.list.appendChild(item);
+    });
+  }
+
+  async function removeProfile(p) {
+    if (!window.confirm(`删除配置「${p.name}」？`)) return;
+    try {
+      await apiProfilesCall("DELETE", `/app/api/profiles/${encodeURIComponent(p.id)}`);
+      if (editingId === p.id) closeForm();
+      showToast("已删除");
+    } catch (e) {
+      showToast(e.message);
+    }
+  }
+
+  async function saveForm() {
+    const type = els.type.value === "gemini" ? "gemini" : "openai";
+    const payload = {
+      name: els.name.value.trim(),
+      base_url: els.base.value.trim(),
+      model: els.model.value.trim(),
+    };
+    if (isNewKey(els.key.value)) payload.api_key = els.key.value.trim();
+    try {
+      if (editingId) {
+        await apiProfilesCall("PUT", `/app/api/profiles/${encodeURIComponent(editingId)}`, payload);
+        showToast("已保存");
+      } else {
+        payload.protocol = type;
+        await apiProfilesCall("POST", "/app/api/profiles", payload);
+        showToast("已新增");
+      }
+      closeForm();
+    } catch (e) {
+      els.status.textContent = e.message;
+    }
+  }
+
+  els.type.addEventListener("change", applyTypeDefaults);
+  els.add.addEventListener("click", () => openForm(null));
+  els.cancel.addEventListener("click", closeForm);
+  els.save.addEventListener("click", saveForm);
+  els.key.addEventListener("focus", () => {
+    if (els.key.value === KEY_MASK) els.key.value = "";
+  });
+  els.key.addEventListener("blur", () => {
+    if (!els.key.value.trim() && els.key.dataset.configured === "1") els.key.value = KEY_MASK;
+  });
+  els.reveal.addEventListener("mousedown", (e) => e.preventDefault());
+  els.reveal.addEventListener("click", async () => {
+    if (!editingId) {
+      showToast("先保存后再显示 Key");
+      return;
+    }
+    if (els.key.type === "text") {
+      els.key.type = "password";
+      els.reveal.textContent = "显示";
+      return;
+    }
+    try {
+      const r = await fetch(`${API_BASE}/app/api/profiles/${encodeURIComponent(editingId)}/reveal`, {
+        method: "POST",
+        headers: apiHeaders(),
+      });
+      if (!r.ok) {
+        showToast("读取 Key 失败: " + r.status);
+        return;
+      }
+      const d = await r.json();
+      if (!d.api_key) {
+        showToast("这套配置还没有 Key");
+        return;
+      }
+      els.key.type = "text";
+      els.key.value = d.api_key;
+      els.reveal.textContent = "隐藏";
+    } catch (_) {
+      showToast("网络错误");
+    }
+  });
+
+  apiLibraryUI = { render };
+  render();
+}
+
+document.querySelectorAll(".api-profiles[data-scope]").forEach((root) => {
+  initScopePicker(root.dataset.scope, root);
+});
+const apiLibraryRoot = document.getElementById("apiLibrary");
+if (apiLibraryRoot) initApiLibrary(apiLibraryRoot);
+
+async function loadApiProfiles() {
+  try {
+    await apiProfilesFetch();
+  } catch (e) {
+    apiProfilesReady = true;
+    Object.keys(API_UI).forEach((scope) => API_UI[scope].render());
+    if (apiLibraryUI) apiLibraryUI.render();
+    showToast("读取 API 配置库失败：" + e.message);
+  }
+}
+
+function token() {
+  const t = localStorage.getItem(TOKEN_KEY);
+  return t ? "Bearer " + t : "0";
+}
+
+function flagOn(v, def = true) {
+  if (v == null || v === "") return def;
+  const s = String(v).trim().toLowerCase();
+  return !["0", "false", "off", "no"].includes(s);
+}
+
+function paintThemePill() {
+  const t = document.documentElement.getAttribute("data-theme") === "night" ? "night" : "day";
+  const pill = document.getElementById("themePill");
+  if (pill) pill.textContent = t === "night" ? "夜间" : "日间";
+}
+
+function setTheme(t) {
+  const theme = t === "night" ? "night" : "day";
+  document.documentElement.setAttribute("data-theme", theme);
+  try { localStorage.setItem("companion_theme", theme); } catch (_) {}
+  paintThemePill();
+}
+
+document.getElementById("themePill")?.addEventListener("click", () => {
+  const cur = document.documentElement.getAttribute("data-theme") === "night" ? "night" : "day";
+  setTheme(cur === "night" ? "day" : "night");
+});
+paintThemePill();
+
+function openAcc(card) {
+  document.querySelectorAll("section.card[data-acc]").forEach((el) => {
+    const on = el === card;
+    el.classList.toggle("open", on);
+    el.querySelectorAll("[aria-expanded]").forEach((b) => {
+      b.setAttribute("aria-expanded", on ? "true" : "false");
+    });
+  });
+}
+
+document.querySelectorAll("section.card[data-acc]").forEach((card) => {
+  const openers = card.querySelectorAll("button.acc-head, button.acc-open");
+  openers.forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      if (e.target.closest(".acc-switch")) return;
+      e.preventDefault();
+      if (card.classList.contains("open")) {
+        card.classList.remove("open");
+        card.querySelectorAll("[aria-expanded]").forEach((b) => b.setAttribute("aria-expanded", "false"));
+      } else {
+        openAcc(card);
+      }
+    });
+  });
+});
+
+document.getElementById("resetVoyagePrompt")?.addEventListener("click", () => {
+  document.getElementById("voyagePrompt").value = promptDefaults.voyageDefault || "";
+  showToast("已填入默认航海提示词（保存后生效）");
+});
+document.getElementById("resetDailyPrompt")?.addEventListener("click", () => {
+  document.getElementById("dailyPrompt").value = promptDefaults.dailyDefault || "";
+  showToast("已填入默认事件线提示词（保存后生效）");
+});
+document.getElementById("resetAffectPrompt")?.addEventListener("click", () => {
+  document.getElementById("affectPrompt").value = promptDefaults.affectDefault || "";
+  showToast("已填入默认分析提示词（保存后生效）");
+});
+
+async function loadPrompts() {
+  try {
+    const r = await fetch(`${API_BASE}/app/memory/summary/prompts`, {
+      headers: { Authorization: token() },
+    });
+    if (!r.ok) return;
+    const p = await r.json();
+    promptDefaults.voyageDefault = p.voyageDefault || "";
+    promptDefaults.dailyDefault = p.dailyDefault || "";
+    const v = document.getElementById("voyagePrompt");
+    const d = document.getElementById("dailyPrompt");
+    if (v) {
+      v.value = (p.voyageOverride && String(p.voyageOverride).trim())
+        ? p.voyageOverride
+        : (p.voyageActive || p.voyageDefault || "");
+    }
+    if (d) {
+      d.value = (p.dailyOverride && String(p.dailyOverride).trim())
+        ? p.dailyOverride
+        : (p.dailyActive || p.dailyDefault || "");
+    }
+  } catch (_) {}
+}
+
+async function loadAffectPrompt(settings) {
+  const el = document.getElementById("affectPrompt");
+  if (!el) return;
+  try {
+    const r = await fetch(`${API_BASE}/app/affect/prompt`, {
+      headers: { Authorization: token() },
+    });
+    if (r.ok) {
+      const d = await r.json();
+      promptDefaults.affectDefault = d.default || "";
+    }
+  } catch (_) {}
+  const override = String((settings && settings.affect_prompt) || "").trim();
+  el.value = override || promptDefaults.affectDefault || "";
+}
+
+const sliders = {
+  scribeMin:     { key: "scribe_min_messages", el: "scribeMinVal" },
+  scribeSilence: { key: "scribe_silence_minutes", el: "scribeSilenceVal" },
+  temperature:   { key: "temperature", el: "temperatureVal" },
+  maxTokens:     { key: "max_tokens", el: "maxTokensVal" },
+  historyNMax:   { key: "history_n_max", el: "historyNMaxVal" },
+  historyNMin:   { key: "history_n_min", el: "historyNMinVal" },
+  dailyInterval: { key: "daily_events_interval", el: "dailyIntervalVal" },
+};
+
+let loaded = {};
+
+function isNewKey(val) {
+  const v = (val || "").trim();
+  return v !== "" && v !== KEY_MASK;
+}
+
+function activeChatProfile() {
+  return apiProfiles.find((p) => p.id === (apiActive.chat || "")) || null;
+}
+
+function geminiModelForEffort() {
+  const p = activeChatProfile();
+  if (p && p.protocol === "gemini") return p.model || "";
+  return loaded.gemini_model || "";
+}
+
+function geminiAllowsMinimal(model) {
+  return /3\.6/i.test(model || "");
+}
+
+function paintThinkingEffort(model, effort) {
+  const allow = geminiAllowsMinimal(model);
+  let v = String(effort || "low").trim().toLowerCase();
+  if (v === "xhigh" || v === "max" || v === "ultra") v = "high";
+  if (!allow && v === "minimal") v = "low";
+  if (!["minimal", "low", "medium", "high"].includes(v)) v = "low";
+  document.querySelectorAll('input[name="thinkingEffort"]').forEach((r) => {
+    const lab = r.closest("label");
+    if (r.value === "minimal" && lab) lab.style.display = allow ? "" : "none";
+    r.checked = r.value === v;
+  });
+  return v;
+}
+
+function currentThinkingEffort() {
+  const el = document.querySelector('input[name="thinkingEffort"]:checked');
+  return paintThinkingEffort(geminiModelForEffort(), (el && el.value) || "low");
+}
+
+function refreshThinkingEffort() {
+  const el = document.querySelector('input[name="thinkingEffort"]:checked');
+  paintThinkingEffort(geminiModelForEffort(), (el && el.value) || "low");
+}
+
+async function load() {
+  try {
+    const r = await fetch(`${API_BASE}/app/settings`, {
+      headers: { Authorization: token() },
+    });
+    if (!r.ok) return;
+    const s = await r.json();
+    loaded = s;
+    await loadApiProfiles();
+    paintThinkingEffort(geminiModelForEffort(), s.thinking_effort || "low");
+    document.getElementById("persona").value = s.persona || "";
+    document.getElementById("outputStyle").value = s.output_style || "";
+    const cityEl = document.getElementById("weatherCity");
+    if (cityEl) {
+      const savedPath = (s.weather_city_path || "").trim();
+      const savedQuery = (s.weather_city || "").trim();
+      cityEl.value = savedPath || savedQuery || "北京";
+      if (savedPath || savedQuery) {
+        cityEl.dataset.query = savedQuery || savedPath;
+        cityEl.dataset.path = savedPath;
+      } else {
+        delete cityEl.dataset.query;
+        delete cityEl.dataset.path;
+      }
+    }
+
+    Object.entries(sliders).forEach(([id, { key, el }]) => {
+      if (s[key] !== undefined && s[key] !== "") {
+        document.getElementById(id).value = s[key];
+        document.getElementById(el).textContent = s[key];
+      }
+    });
+    syncHistoryBounds();
+    const pe = (s.proactive_enabled ?? "1").toString().toLowerCase();
+    document.getElementById("proactiveEnabled").checked = !["0", "false", "off", "no"].includes(pe);
+    const np = (s.notification_privacy ?? "1").toString().toLowerCase();
+    document.getElementById("notificationPrivacy").checked = !["0", "false", "off", "no"].includes(np);
+    const aa = (s.affect_analyze_enabled ?? "0").toString().toLowerCase();
+    document.getElementById("affectAnalyzeEnabled").checked = ["1", "true", "on", "yes"].includes(aa);
+    const at = (s.affect_tone_enabled ?? "0").toString().toLowerCase();
+    document.getElementById("affectToneEnabled").checked = ["1", "true", "on", "yes"].includes(at);
+
+    document.getElementById("featureWeather").checked = flagOn(s.feature_weather_enabled, true);
+    document.getElementById("featureVoyage").checked = flagOn(s.feature_voyage_enabled, true);
+    document.getElementById("featureDaily").checked = flagOn(s.feature_daily_events_enabled, true);
+    document.getElementById("featureAffect").checked = flagOn(s.feature_affect_enabled, true);
+    document.getElementById("featureMemInject").checked = flagOn(s.feature_memory_inject_enabled, true);
+    document.getElementById("featureSchedInject").checked = flagOn(s.feature_schedule_inject_enabled, true);
+    document.getElementById("featureSchedParse").checked = flagOn(s.feature_schedule_parse_enabled, true);
+    document.getElementById("featureGrounding").checked = flagOn(s.feature_grounding_enabled, true);
+    document.getElementById("featureSelfWake").checked = flagOn(s.feature_self_wake_enabled, true);
+    await loadPrompts();
+    await loadAffectPrompt(s);
+  } catch (_) {}
+}
+
+Object.keys(sliders).forEach(id => {
+  document.getElementById(id).addEventListener("input", () => {
+    if (id === "historyNMin" || id === "historyNMax") syncHistoryBounds();
+    document.getElementById(sliders[id].el).textContent = document.getElementById(id).value;
+  });
+});
+
+function syncHistoryBounds() {
+  const minEl = document.getElementById("historyNMin");
+  const maxEl = document.getElementById("historyNMax");
+  if (parseInt(minEl.value, 10) > parseInt(maxEl.value, 10)) {
+    minEl.value = maxEl.value;
+  }
+  document.getElementById("historyNMinVal").textContent = minEl.value;
+  document.getElementById("historyNMaxVal").textContent = maxEl.value;
+}
+
+document.getElementById("saveBtn").addEventListener("click", async () => {
+  const relaySecret = document.getElementById("relaySecret").value.trim();
+
+  const payload = {
+    thinking_effort: currentThinkingEffort(),
+    persona: document.getElementById("persona").value,
+    output_style: document.getElementById("outputStyle").value,
+    weather_city: document.getElementById("weatherCity").dataset.query
+      || document.getElementById("weatherCity").value.trim()
+      || "北京",
+    weather_city_path: document.getElementById("weatherCity").dataset.path || "",
+    proactive_enabled: document.getElementById("proactiveEnabled").checked ? "1" : "0",
+    notification_privacy: document.getElementById("notificationPrivacy").checked ? "1" : "0",
+    affect_analyze_enabled: document.getElementById("affectAnalyzeEnabled").checked ? "1" : "0",
+    affect_tone_enabled: document.getElementById("affectToneEnabled").checked ? "1" : "0",
+    feature_weather_enabled: document.getElementById("featureWeather").checked ? "1" : "0",
+    feature_voyage_enabled: document.getElementById("featureVoyage").checked ? "1" : "0",
+    feature_daily_events_enabled: document.getElementById("featureDaily").checked ? "1" : "0",
+    feature_affect_enabled: document.getElementById("featureAffect").checked ? "1" : "0",
+    feature_memory_inject_enabled: document.getElementById("featureMemInject").checked ? "1" : "0",
+    feature_schedule_inject_enabled: document.getElementById("featureSchedInject").checked ? "1" : "0",
+    feature_schedule_parse_enabled: document.getElementById("featureSchedParse").checked ? "1" : "0",
+    feature_grounding_enabled: document.getElementById("featureGrounding").checked ? "1" : "0",
+    feature_self_wake_enabled: document.getElementById("featureSelfWake").checked ? "1" : "0",
+  };
+  const voyageRaw = document.getElementById("voyagePrompt")?.value || "";
+  const dailyRaw = document.getElementById("dailyPrompt")?.value || "";
+  payload.summary_voyage_prompt =
+    voyageRaw.trim() === (promptDefaults.voyageDefault || "").trim() ? "" : voyageRaw;
+  payload.summary_daily_prompt =
+    dailyRaw.trim() === (promptDefaults.dailyDefault || "").trim() ? "" : dailyRaw;
+  const affectRaw = document.getElementById("affectPrompt")?.value || "";
+  payload.affect_prompt =
+    affectRaw.trim() === (promptDefaults.affectDefault || "").trim() ? "" : affectRaw;
+  Object.entries(sliders).forEach(([id, { key }]) => {
+    payload[key] = document.getElementById(id).value;
+  });
+  payload.history_n = payload.history_n_max;
+  if (relaySecret) payload.relay_secret = relaySecret;
+
+  const needsRestart = !!relaySecret;
+
+  try {
+    const r = await fetch(`${API_BASE}/app/settings`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: token() },
+      body: JSON.stringify(payload),
+    });
+    if (r.ok) {
+      if (relaySecret) localStorage.setItem(TOKEN_KEY, relaySecret);
+      document.getElementById("relaySecret").value = "";
+      await load();
+      showToast(needsRestart
+        ? "连接密钥已更新，请重启服务后用新密钥登录"
+        : "设置已保存（Key/模型下一条生效；保存成功不等于网络通）");
+    } else {
+      let msg = "保存失败: " + r.status;
+      try {
+        const j = await r.json();
+        if (j && j.detail) msg = j.detail;
+      } catch (_) {}
+      showToast(msg);
+    }
+  } catch (e) {
+    showToast("网络错误");
+  }
+});
+
+document.getElementById("resetBtn").addEventListener("click", () => {
+  // API 配置库不在这里重置（避免误删），只重置其它表单字段
+  // 人设 / 输出风格留空=用系统默认：回填默认文本，保证看得见
+  document.getElementById("persona").value = loaded.persona || "";
+  document.getElementById("outputStyle").value = loaded.output_style || "";
+  const resetCity = document.getElementById("weatherCity");
+  resetCity.value = "北京";
+  delete resetCity.dataset.query;
+  delete resetCity.dataset.path;
+  document.getElementById("relaySecret").value = "";
+  document.getElementById("scribeMin").value = 25;
+  document.getElementById("scribeSilence").value = 20;
+  document.getElementById("temperature").value = 0.7;
+  document.getElementById("maxTokens").value = 512;
+  document.getElementById("historyNMax").value = 12;
+  document.getElementById("historyNMin").value = 12;
+  document.getElementById("proactiveEnabled").checked = true;
+  document.getElementById("notificationPrivacy").checked = true;
+  document.getElementById("affectAnalyzeEnabled").checked = false;
+  document.getElementById("affectToneEnabled").checked = false;
+  document.getElementById("featureWeather").checked = true;
+  document.getElementById("featureVoyage").checked = true;
+  document.getElementById("featureDaily").checked = true;
+  document.getElementById("featureAffect").checked = true;
+  document.getElementById("featureMemInject").checked = true;
+  document.getElementById("featureSchedInject").checked = true;
+  document.getElementById("featureSchedParse").checked = true;
+  document.getElementById("featureGrounding").checked = true;
+  document.getElementById("featureSelfWake").checked = true;
+  if (promptDefaults.voyageDefault) document.getElementById("voyagePrompt").value = promptDefaults.voyageDefault;
+  if (promptDefaults.dailyDefault) document.getElementById("dailyPrompt").value = promptDefaults.dailyDefault;
+  if (promptDefaults.affectDefault) document.getElementById("affectPrompt").value = promptDefaults.affectDefault;
+  Object.keys(sliders).forEach(id => {
+    document.getElementById(sliders[id].el).textContent = document.getElementById(id).value;
+  });
+  showToast("已恢复默认（尚未保存；API 配置库不受影响）");
+});
+
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 3200);
+}
+
+async function testConnection(target) {
+  const btnId = target === "memory" ? "testMemoryBtn"
+    : target === "affect" ? "testAffectBtn"
+    : "testChatBtn";
+  const btn = document.getElementById(btnId);
+  const old = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "探测中…";
+  try {
+    const r = await fetch(`${API_BASE}/app/settings/test`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: token() },
+      body: JSON.stringify({ target }),
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      showToast("探测失败: " + r.status);
+      return;
+    }
+    showToast(data.ok ? ("通过：" + (data.detail || "可连")) : ("未通：" + (data.detail || data.reason || "未知")));
+  } catch (_) {
+    showToast("网络错误");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = old;
+  }
+}
+document.getElementById("testChatBtn").addEventListener("click", () => testConnection("chat"));
+document.getElementById("testMemoryBtn").addEventListener("click", () => testConnection("memory"));
+
+document.getElementById("proactiveNowBtn")?.addEventListener("click", async () => {
+  const btn = document.getElementById("proactiveNowBtn");
+  const hint = document.getElementById("proactiveNowHint");
+  const old = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "生成中…";
+  if (hint) hint.textContent = "正在生成主动关怀短句…";
+  try {
+    const r = await fetch(`${API_BASE}/app/proactive_now`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: token() },
+      body: JSON.stringify({ push: true }),
+    });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      showToast("失败：" + (d.detail || r.status));
+      if (hint) hint.textContent = "失败：" + (d.detail || r.status);
+      return;
+    }
+    const line = (d.lines && d.lines[0]) || "";
+    showToast("已发送 " + (d.lines || []).length + " 条" + (line ? "：「" + line.slice(0, 20) + "」" : ""));
+    if (hint) {
+      hint.textContent = "已进聊天" + (line ? "：「" + line + "」" : "")
+        + (d.push && d.push.hint ? " · " + d.push.hint : "");
+    }
+  } catch (e) {
+    showToast("网络错误");
+    if (hint) hint.textContent = "网络错误";
+  } finally {
+    btn.disabled = false;
+    btn.textContent = old;
+  }
+});
+document.getElementById("testAffectBtn").addEventListener("click", () => testConnection("affect"));
+
+load();
+</script>
+
+</body>
+</html>

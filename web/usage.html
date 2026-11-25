@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tidal — 日志</title>
+<link rel="stylesheet" href="styles/theme-follow.css">
+<script src="js/theme-follow.js"></script>
+
+<style>
+  :root {
+    --input-bg: #ffffff;
+    --bg: #F7FAFC;
+    --text: #253447;
+    --text-soft: #5E7080;
+    --text-faint: #93A3B0;
+    --accent: #4C6378;
+    --card-bg: rgba(244,248,250,.72);
+    --card-line: rgba(150,168,182,.18);
+    --card-shadow: 0 8px 24px rgba(70,92,108,.06);
+    --font-cn: "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
+    --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --heat-0: rgba(150,168,182,.07);
+    --heat-1: rgba(76,99,120,.13);
+    --heat-2: rgba(76,99,120,.24);
+    --heat-3: rgba(76,99,120,.38);
+    --heat-4: rgba(76,99,120,.54);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-ui);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 1.5rem;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  .header { display: flex; align-items: center; gap: .75rem; margin-bottom: 1.5rem; }
+  .back-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 2.2rem; height: 2.2rem;
+    border: 1px solid var(--card-line); border-radius: 50%;
+    background: var(--card-bg); color: var(--accent);
+    cursor: pointer; text-decoration: none; flex-shrink: 0;
+  }
+  .back-btn:hover { background: rgba(200,210,220,.3); }
+  h1 { font-family: var(--font-cn); font-size: 1.5rem; font-weight: 500; }
+  .card {
+    background: var(--card-bg); border: 1px solid var(--card-line);
+    border-radius: 1rem; padding: 1.25rem; margin-bottom: 1rem;
+    box-shadow: var(--card-shadow);
+  }
+  .card-title {
+    font-size: .85rem; font-weight: 600; color: var(--text-soft);
+    text-transform: uppercase; letter-spacing: .06em; margin-bottom: .75rem;
+  }
+  .hint { font-size: .75rem; color: var(--text-soft); line-height: 1.55; }
+  .month-bar { display: flex; align-items: center; gap: .5rem; margin-bottom: 1rem; }
+  .month-label { font-size: 1.05rem; font-weight: 600; flex: 1; text-align: center; }
+  .icon-btn {
+    width: 2rem; height: 2rem; flex: none; display: grid; place-items: center;
+    border: 1px solid var(--card-line); border-radius: .6rem;
+    background: var(--input-bg); color: var(--accent); cursor: pointer;
+  }
+  .icon-btn:disabled { opacity: .35; cursor: default; }
+  .seg { display: flex; gap: .25rem; padding: .25rem; border-radius: .7rem; background: rgba(150,168,182,.12); }
+  .seg button {
+    flex: 1; padding: .45rem .6rem; border: 0; border-radius: .5rem;
+    background: transparent; color: var(--text-soft);
+    font-family: inherit; font-size: .85rem; cursor: pointer;
+  }
+  .seg button.on { background: var(--input-bg); color: var(--text); box-shadow: 0 1px 3px rgba(70,92,108,.1); }
+  .totals { display: flex; gap: .75rem; margin: 1rem 0 .25rem; }
+  .total-cell { flex: 1; text-align: center; }
+  .total-num { font-size: 1.35rem; font-weight: 600; line-height: 1.2; }
+  .total-lab { font-size: .7rem; color: var(--text-faint); margin-top: .15rem; }
+  .cal-head, .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: .3rem; }
+  .cal-head { margin-bottom: .3rem; }
+  .cal-head span { text-align: center; font-size: .7rem; color: var(--text-faint); }
+  .cell {
+    position: relative; aspect-ratio: 1; border-radius: .5rem;
+    background: var(--heat-0); border: 1px solid transparent;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    cursor: default; padding: 0; font-family: inherit; color: inherit;
+  }
+  .cell.blank { background: transparent; }
+  .cell.has-data { cursor: pointer; }
+  .cell.sel { border-color: var(--accent); }
+  .cell.today { box-shadow: inset 0 0 0 1px rgba(76,99,120,.45); }
+  .cell-day { position: absolute; top: 3px; left: 5px; font-size: .6rem; color: var(--text-faint); }
+  .cell-val { font-size: .95rem; font-weight: 600; line-height: 1; }
+  .cell-val.small { font-size: .72rem; }
+  .cell.lv1 { background: var(--heat-1); }
+  .cell.lv2 { background: var(--heat-2); }
+  .cell.lv3 { background: var(--heat-3); }
+  .cell.lv4 { background: var(--heat-4); color: #fff; }
+  .cell.lv4 .cell-day { color: rgba(255,255,255,.75); }
+  .detail { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--card-line); }
+  .detail-title { font-size: .9rem; font-weight: 600; margin-bottom: .5rem; }
+  .kv { display: flex; justify-content: space-between; font-size: .8rem; padding: .2rem 0; }
+  .kv span:last-child { font-variant-numeric: tabular-nums; }
+  .kv.sub { color: var(--text-soft); padding-left: .75rem; }
+  .price-row { display: grid; grid-template-columns: 1fr repeat(3, 4.4rem); gap: .4rem; align-items: center; margin-bottom: .4rem; }
+  .price-row .m { font-size: .78rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .price-row input {
+    width: 100%; padding: .35rem .4rem; border: 1px solid var(--card-line);
+    border-radius: .4rem; background: var(--input-bg); font-size: .78rem; color: var(--text);
+    font-family: inherit; text-align: right;
+  }
+  .price-head { font-size: .65rem; color: var(--text-faint); text-align: right; }
+  .btn {
+    padding: .55rem 1rem; border: 1px solid var(--card-line); border-radius: .6rem;
+    background: var(--input-bg); color: var(--text); font-family: inherit; font-size: .85rem; cursor: pointer;
+  }
+  .btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
+  .warn { font-size: .75rem; color: #9C5B3C; margin-top: .5rem; }
+  .empty { text-align: center; color: var(--text-faint); font-size: .85rem; padding: 2rem 0; }
+  .footer { text-align: center; font-size: .75rem; color: var(--text-faint); margin-top: 2rem; }
+  details summary { cursor: pointer; font-size: .85rem; color: var(--text-soft); }
+  .log-table { width: 100%; border-collapse: collapse; font-size: .75rem; margin-top: .5rem; }
+  .log-table th {
+    text-align: left; font-weight: 600; color: var(--text-faint); font-size: .65rem;
+    padding: .25rem .2rem; border-bottom: 1px solid var(--card-line);
+  }
+  .log-table td {
+    padding: .4rem .2rem; border-bottom: 1px solid rgba(150,168,182,.12);
+    vertical-align: top; line-height: 1.35;
+  }
+  .usage-model {
+    max-width: 7.5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    font-size: .7rem;
+  }
+  .usage-num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .usage-cache.zero { color: #9C5B3C; }
+  .usage-cache.hit { color: #5a6e4a; }
+  .usage-fail { opacity: .55; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <a class="back-btn" href="/#home" title="返回主页">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+  </a>
+  <h1>日志</h1>
+</div>
+
+<div class="card">
+  <div class="month-bar">
+    <button class="icon-btn" id="prevMonth" type="button" aria-label="上个月">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <div class="month-label" id="monthLabel">——</div>
+    <button class="icon-btn" id="nextMonth" type="button" aria-label="下个月">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>
+    </button>
+  </div>
+
+  <div class="seg" id="metricSeg">
+    <button type="button" data-metric="calls" class="on">调用次数</button>
+    <button type="button" data-metric="cost">花费</button>
+  </div>
+
+  <div class="totals">
+    <div class="total-cell"><div class="total-num" id="sumMain">—</div><div class="total-lab" id="sumMainLab">本月合计</div></div>
+    <div class="total-cell"><div class="total-num" id="sumAvg">—</div><div class="total-lab">有记录日均</div></div>
+    <div class="total-cell"><div class="total-num" id="sumPeak">—</div><div class="total-lab">单日峰值</div></div>
+  </div>
+
+  <div id="calWrap" style="margin-top:1rem;">
+    <div class="cal-head"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
+    <div class="cal-grid" id="calGrid"></div>
+  </div>
+  <div class="empty" id="emptyHint" hidden>这个月还没有记录。</div>
+  <div class="detail" id="detail" hidden></div>
+  <div class="warn" id="unpricedWarn" hidden></div>
+</div>
+
+<div class="card">
+  <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;">
+    <span>最近调用</span>
+    <button type="button" class="btn" id="recentRefresh" style="padding:.3rem .65rem;font-size:.75rem;">刷新</button>
+  </div>
+  <p class="hint">最近 40 次 LLM 调用。看模型、总输入、缓存命中；估费按下方单价表现算。</p>
+  <div class="totals" style="margin:.5rem 0 .75rem;">
+    <div class="total-cell"><div class="total-num" id="recentSumCost" style="font-size:1.1rem;">—</div><div class="total-lab">本页估费</div></div>
+    <div class="total-cell"><div class="total-num" id="recentCachePct" style="font-size:1.1rem;">—</div><div class="total-lab">缓存命中率</div></div>
+    <div class="total-cell"><div class="total-num" id="recentAvgIn" style="font-size:1.1rem;">—</div><div class="total-lab">均输入</div></div>
+  </div>
+  <div style="overflow-x:auto;">
+    <table class="log-table" id="recentTable">
+      <thead>
+        <tr>
+          <th>时间</th>
+          <th>模型</th>
+          <th>输入</th>
+          <th>缓存</th>
+          <th>输出</th>
+          <th>估费</th>
+        </tr>
+      </thead>
+      <tbody id="recentBody"><tr><td colspan="6">加载中…</td></tr></tbody>
+    </table>
+  </div>
+  <span class="hint" id="recentMsg"></span>
+</div>
+
+<div class="card">
+  <details id="priceBox">
+    <summary>模型单价（USD / 百万 token）</summary>
+    <p class="hint" style="margin:.75rem 0;">
+      金额在页面上按这张表实时算，不写进数据库 —— 改单价会立刻重算整月，填错了改回来即可。
+      Google 计费口径：<code>input</code> 含缓存部分，缓存单独按低价计；思考 token 按输出价计。
+    </p>
+    <div class="price-row" style="margin-bottom:.5rem;">
+      <div class="price-head" style="text-align:left;">模型</div>
+      <div class="price-head">输入</div>
+      <div class="price-head">缓存输入</div>
+      <div class="price-head">输出</div>
+    </div>
+    <div id="priceRows"></div>
+    <button class="btn primary" id="savePrices" type="button" style="margin-top:.75rem;">保存单价</button>
+    <span class="hint" id="priceMsg" style="margin-left:.6rem;"></span>
+  </details>
+</div>
+
+<div class="footer">Tidal — Usage</div>
+
+<script>
+(function () {
+  const a = document.querySelector("a.back-btn");
+  if (!a) return;
+  a.addEventListener("click", (e) => {
+    e.preventDefault();
+    let sameHome = false;
+    try {
+      const u = new URL(document.referrer);
+      sameHome = u.origin === location.origin && (/\/$/.test(u.pathname) || /\/index\.html$/.test(u.pathname));
+    } catch (_) {}
+    if (sameHome && history.length > 1) history.back();
+    else location.replace("/#home");
+  });
+})();
+
+const API_BASE = "";
+const TOKEN_KEY = "companion_secret";
+const RECENT_LIMIT = 40;
+
+function token() {
+  const t = localStorage.getItem(TOKEN_KEY);
+  return t ? "Bearer " + t : "0";
+}
+
+let cursor = new Date();
+let metric = "calls";
+let data = null;
+let prices = {};
+let selectedDay = "";
+let recentEvents = [];
+
+const $ = (id) => document.getElementById(id);
+const monthKey = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+
+function costOf(row) {
+  const p = prices[row.model];
+  if (!p) return 0;
+  const billableIn = Math.max(0, (row.input_tokens || 0) - (row.cached_tokens || 0));
+  const billableOut = (row.output_tokens || 0) + (row.thought_tokens || 0);
+  return (billableIn * (+p.in || 0)
+        + (row.cached_tokens || 0) * (+p.cached_in || 0)
+        + billableOut * (+p.out || 0)) / 1e6;
+}
+const dayCost = (day) => (day.models || []).reduce((sum, m) => sum + costOf(m), 0);
+const dayValue = (day) => (metric === "cost" ? dayCost(day) : (day.calls || 0));
+
+function fmtValue(v) {
+  if (metric !== "cost") return String(v);
+  if (!v) return "0";
+  if (v < 0.01) return "<.01";
+  return v < 10 ? v.toFixed(2) : v.toFixed(1);
+}
+const fmtMoney = (v) => "$" + (v < 1 ? v.toFixed(3) : v.toFixed(2));
+const fmtInt = (n) => (n || 0).toLocaleString("en-US");
+
+function levelsFor(values) {
+  const vals = values.filter((v) => v > 0).sort((a, b) => a - b);
+  if (!vals.length) return [];
+  const cuts = [];
+  for (let i = 1; i < 5; i++) {
+    const idx = Math.min(vals.length - 1, Math.round((i * vals.length) / 5));
+    const v = vals[idx];
+    if (!cuts.length || v > cuts[cuts.length - 1]) cuts.push(v);
+  }
+  return cuts;
+}
+function levelOf(v, cuts) {
+  if (v <= 0) return 0;
+  let lv = 1;
+  for (let i = 0; i < cuts.length; i++) if (v >= cuts[i]) lv = Math.min(4, i + 1);
+  return lv;
+}
+
+async function load() {
+  const r = await fetch(`${API_BASE}/app/stats/daily?month=${monthKey(cursor)}`, {
+    headers: { Authorization: token() },
+  });
+  if (r.status === 401) { location.replace("/"); return; }
+  if (!r.ok) throw new Error("stats " + r.status);
+  data = await r.json();
+  prices = data.prices && typeof data.prices === "object" ? data.prices : {};
+  selectedDay = "";
+  renderPrices();
+  render();
+}
+
+function render() {
+  const days = (data && data.days) || [];
+  const byDay = new Map(days.map((d) => [d.day, d]));
+  const [y, m] = (data.month || monthKey(cursor)).split("-").map(Number);
+
+  $("monthLabel").textContent = `${y} 年 ${m} 月`;
+  const now = new Date();
+  $("nextMonth").disabled = (y > now.getFullYear()) || (y === now.getFullYear() && m >= now.getMonth() + 1);
+
+  const vals = days.map(dayValue);
+  const sum = vals.reduce((a, b) => a + b, 0);
+  const peak = vals.length ? Math.max(...vals) : 0;
+  const avg = vals.length ? sum / vals.length : 0;
+  const money = metric === "cost";
+  $("sumMainLab").textContent = money ? "本月花费" : "本月调用";
+  $("sumMain").textContent = money ? fmtMoney(sum) : fmtInt(sum);
+  $("sumAvg").textContent = money ? fmtMoney(avg) : Math.round(avg).toLocaleString("en-US");
+  $("sumPeak").textContent = money ? fmtMoney(peak) : fmtInt(peak);
+
+  const cuts = levelsFor(vals);
+  const first = new Date(y, m - 1, 1);
+  const lead = (first.getDay() + 6) % 7;
+  const total = new Date(y, m, 0).getDate();
+  const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+
+  const cells = [];
+  for (let i = 0; i < lead; i++) cells.push('<div class="cell blank"></div>');
+  for (let d = 1; d <= total; d++) {
+    const key = `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    const row = byDay.get(key);
+    const v = row ? dayValue(row) : 0;
+    const cls = [
+      "cell", "lv" + levelOf(v, cuts),
+      row ? "has-data" : "",
+      key === todayKey ? "today" : "",
+      key === selectedDay ? "sel" : "",
+    ].filter(Boolean).join(" ");
+    const txt = row ? fmtValue(v) : "";
+    const small = money || String(txt).length > 3 ? " small" : "";
+    cells.push(
+      `<button type="button" class="${cls}" data-day="${key}"${row ? "" : " disabled"}>
+         <span class="cell-day">${d}</span>
+         <span class="cell-val${small}">${txt}</span>
+       </button>`
+    );
+  }
+  $("calGrid").innerHTML = cells.join("");
+  $("calWrap").hidden = !days.length;
+  $("emptyHint").hidden = !!days.length;
+
+  const unpriced = (data.unpriced_models || []).filter(Boolean);
+  $("unpricedWarn").hidden = !(money && unpriced.length);
+  $("unpricedWarn").textContent = unpriced.length
+    ? `未配置单价：${unpriced.join("、")} —— 这些调用按 $0 计入，花费会偏低。`
+    : "";
+
+  renderDetail(byDay.get(selectedDay));
+}
+
+function renderDetail(row) {
+  const box = $("detail");
+  if (!row) { box.hidden = true; box.innerHTML = ""; return; }
+  const lines = [
+    `<div class="detail-title">${row.day}</div>`,
+    `<div class="kv"><span>模型调用</span><span>${fmtInt(row.calls)} 次</span></div>`,
+  ];
+  if (row.failed) lines.push(`<div class="kv"><span>失败调用</span><span>${fmtInt(row.failed)} 次</span></div>`);
+  lines.push(
+    `<div class="kv"><span>输入 token（含缓存）</span><span>${fmtInt(row.input_tokens)}</span></div>`,
+    `<div class="kv sub"><span>其中缓存命中</span><span>${fmtInt(row.cached_tokens)}（${row.input_tokens ? Math.round(row.cached_tokens / row.input_tokens * 100) : 0}%）</span></div>`,
+    `<div class="kv"><span>输出 token</span><span>${fmtInt(row.output_tokens)}</span></div>`,
+    `<div class="kv sub"><span>其中思考</span><span>${fmtInt(row.thought_tokens)}</span></div>`,
+    `<div class="kv"><span>当日花费</span><span>${fmtMoney(dayCost(row))}</span></div>`
+  );
+  for (const m of row.models || []) {
+    lines.push(`<div class="kv sub"><span>${m.model || "(未知模型)"} × ${fmtInt(m.calls)}</span><span>${fmtMoney(costOf(m))}</span></div>`);
+  }
+  box.innerHTML = lines.join("");
+  box.hidden = false;
+}
+
+function renderPrices() {
+  const seen = new Set(Object.keys(prices));
+  for (const d of (data && data.days) || []) for (const m of d.models || []) if (m.model) seen.add(m.model);
+  for (const e of recentEvents) if (e.model) seen.add(e.model);
+  const models = [...seen].sort();
+  if (!models.length) {
+    $("priceRows").innerHTML = '<p class="hint">还没有任何调用记录，先聊几句再回来填单价。</p>';
+    return;
+  }
+  $("priceRows").innerHTML = models.map((m) => {
+    const p = prices[m] || {};
+    const f = (k) => (p[k] === undefined || p[k] === null || p[k] === "" ? "" : p[k]);
+    return `<div class="price-row" data-model="${m}">
+      <div class="m" title="${m}">${m}</div>
+      <input type="number" step="0.01" min="0" data-k="in" value="${f("in")}" placeholder="0">
+      <input type="number" step="0.01" min="0" data-k="cached_in" value="${f("cached_in")}" placeholder="0">
+      <input type="number" step="0.01" min="0" data-k="out" value="${f("out")}" placeholder="0">
+    </div>`;
+  }).join("");
+}
+
+async function savePrices() {
+  const next = {};
+  for (const row of document.querySelectorAll("#priceRows .price-row")) {
+    const model = row.dataset.model;
+    const entry = {};
+    let any = false;
+    for (const input of row.querySelectorAll("input")) {
+      const v = parseFloat(input.value);
+      if (!isNaN(v) && v >= 0) { entry[input.dataset.k] = v; any = true; }
+    }
+    if (any) next[model] = entry;
+  }
+  const msg = $("priceMsg");
+  msg.textContent = "保存中…";
+  try {
+    const r = await fetch(`${API_BASE}/app/settings`, {
+      method: "PUT",
+      headers: { Authorization: token(), "Content-Type": "application/json" },
+      body: JSON.stringify({ model_prices: JSON.stringify(next) }),
+    });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    prices = next;
+    msg.textContent = "已保存";
+    render();
+    renderRecent();
+  } catch (e) {
+    msg.textContent = "保存失败：" + e.message;
+  }
+  setTimeout(() => { msg.textContent = ""; }, 2600);
+}
+
+function fmtShortTs(iso) {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return String(iso).slice(5, 16);
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mi = String(d.getMinutes()).padStart(2, "0");
+  return `${mm}-${dd} ${hh}:${mi}`;
+}
+
+function shortModel(m) {
+  const s = (m || "").trim() || "—";
+  return s.replace(/^gemini-/, "g-").replace(/^deepseek-/, "ds-");
+}
+
+function renderRecent() {
+  const body = $("recentBody");
+  if (!body) return;
+  const ok = recentEvents.filter((e) => e.status === "ok");
+  const tin = ok.reduce((s, e) => s + (e.input_tokens || 0), 0);
+  const tc = ok.reduce((s, e) => s + (e.cached_tokens || 0), 0);
+  const sumCost = recentEvents.reduce((s, e) => s + (e.status === "ok" ? costOf(e) : 0), 0);
+  $("recentSumCost").textContent = ok.length ? fmtMoney(sumCost) : "—";
+  $("recentCachePct").textContent = tin ? Math.round((tc / tin) * 100) + "%" : "—";
+  $("recentAvgIn").textContent = ok.length ? fmtInt(Math.round(tin / ok.length)) : "—";
+
+  if (!recentEvents.length) {
+    body.innerHTML = '<tr><td colspan="6">暂无记录</td></tr>';
+    return;
+  }
+  body.innerHTML = recentEvents.map((e) => {
+    const fail = e.status !== "ok";
+    const cache = e.cached_tokens || 0;
+    const inp = e.input_tokens || 0;
+    const pct = inp ? Math.round((cache / inp) * 100) : 0;
+    const thought = e.thought_tokens || 0;
+    const outLabel = thought
+      ? `${fmtInt(e.output_tokens || 0)}+${fmtInt(thought)}`
+      : fmtInt(e.output_tokens || 0);
+    const cacheCls = cache > 0 ? "hit" : "zero";
+    const cacheLabel = inp ? `${fmtInt(cache)} (${pct}%)` : "0";
+    const cost = fail ? "—" : (prices[e.model] ? fmtMoney(costOf(e)) : "?");
+    return `<tr class="${fail ? "usage-fail" : ""}">
+      <td class="usage-num">${fmtShortTs(e.ts)}</td>
+      <td><div class="usage-model" title="${e.model || ""}">${shortModel(e.model)}${fail ? " ·fail" : ""}</div></td>
+      <td class="usage-num">${fmtInt(inp)}</td>
+      <td class="usage-num usage-cache ${cacheCls}">${cacheLabel}</td>
+      <td class="usage-num">${outLabel}</td>
+      <td class="usage-num">${cost}</td>
+    </tr>`;
+  }).join("");
+}
+
+async function loadRecent() {
+  try {
+    const r = await fetch(`${API_BASE}/app/stats/recent?limit=${RECENT_LIMIT}`, {
+      headers: { Authorization: token() },
+    });
+    if (r.status === 401) { location.replace("/"); return; }
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const j = await r.json();
+    recentEvents = Array.isArray(j.events) ? j.events : [];
+    if (j.prices && typeof j.prices === "object" && Object.keys(prices).length === 0) {
+      prices = j.prices;
+    }
+    renderRecent();
+    renderPrices();
+  } catch (e) {
+    $("recentBody").innerHTML = `<tr><td colspan="6">加载失败：${e.message}</td></tr>`;
+  }
+}
+
+$("metricSeg").addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-metric]");
+  if (!btn) return;
+  metric = btn.dataset.metric;
+  for (const b of $("metricSeg").querySelectorAll("button")) b.classList.toggle("on", b === btn);
+  render();
+});
+$("calGrid").addEventListener("click", (e) => {
+  const cell = e.target.closest(".cell[data-day]");
+  if (!cell || cell.disabled) return;
+  selectedDay = cell.dataset.day === selectedDay ? "" : cell.dataset.day;
+  render();
+});
+$("prevMonth").addEventListener("click", () => { cursor.setDate(1); cursor.setMonth(cursor.getMonth() - 1); load(); });
+$("nextMonth").addEventListener("click", () => { cursor.setDate(1); cursor.setMonth(cursor.getMonth() + 1); load(); });
+$("savePrices").addEventListener("click", savePrices);
+$("recentRefresh").addEventListener("click", () => loadRecent());
+
+load().then(() => loadRecent()).catch((e) => {
+  $("emptyHint").hidden = false;
+  $("emptyHint").textContent = "加载失败：" + e.message;
+  loadRecent();
+});
+</script>
+</body>
+</html>

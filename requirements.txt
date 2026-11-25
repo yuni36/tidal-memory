@@ -1,0 +1,10 @@
+# Tidal 根目录统一 Python 依赖（推荐）
+# 安装：.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+# Python 3.10+
+fastapi==0.137.1
+uvicorn==0.49.0
+aiohttp>=3.9
+PyYAML>=6.0
+chromadb
+onnxruntime
+pywebpush>=2.0

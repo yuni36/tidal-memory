@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tidal — 感知</title>
+<link rel="stylesheet" href="styles/theme-follow.css">
+<script src="js/theme-follow.js"></script>
+
+<style>
+  :root {
+    --input-bg: #ffffff;
+    --bg: #F7FAFC;
+    --text: #253447;
+    --text-soft: #5E7080;
+    --text-faint: #93A3B0;
+    --accent: #4C6378;
+    --card-bg: rgba(244,248,250,.72);
+    --card-line: rgba(150,168,182,.18);
+    --card-shadow: 0 8px 24px rgba(70,92,108,.06);
+    --font-cn: "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
+    --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-ui);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 1.5rem;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  .header { display: flex; align-items: center; gap: .75rem; margin-bottom: 1.5rem; }
+  .back-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 2.2rem; height: 2.2rem;
+    border: 1px solid var(--card-line); border-radius: 50%;
+    background: var(--card-bg); color: var(--accent);
+    cursor: pointer; text-decoration: none; flex-shrink: 0;
+  }
+  .back-btn:hover { background: rgba(200,210,220,.3); }
+  h1 { font-family: var(--font-cn); font-size: 1.5rem; font-weight: 500; }
+  .card {
+    background: var(--card-bg); border: 1px solid var(--card-line);
+    border-radius: 1rem; padding: 1.25rem; margin-bottom: 1rem;
+    box-shadow: var(--card-shadow);
+  }
+  .card-title {
+    font-size: .85rem; font-weight: 600; color: var(--text-soft);
+    text-transform: uppercase; letter-spacing: .06em; margin-bottom: .75rem;
+  }
+  .hint { font-size: .75rem; color: var(--text-soft); line-height: 1.55; }
+
+  .btn {
+    padding: .55rem 1rem; border: 1px solid var(--card-line); border-radius: .6rem;
+    background: var(--input-bg); color: var(--text); font-family: inherit; font-size: .85rem; cursor: pointer;
+  }
+  .btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
+  .footer { text-align: center; font-size: .75rem; color: var(--text-faint); margin-top: 2rem; }
+  .btn-row { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .5rem; }
+  .field { margin-bottom: .55rem; }
+  .field label { display: block; font-size: .72rem; color: var(--text-soft); margin-bottom: .2rem; }
+  .field textarea {
+    width: 100%; padding: .45rem .55rem; border: 1px solid var(--card-line);
+    border-radius: .5rem; background: var(--input-bg); font-family: inherit; font-size: .85rem; color: var(--text);
+  }
+
+  /* 积温情绪面板 */
+  .axis-list { display: flex; flex-direction: column; gap: .55rem; margin-top: .75rem; }
+  .axis-row { display: grid; grid-template-columns: 4.2rem 1fr 3.2rem; gap: .45rem; align-items: center; }
+  .axis-lab { font-size: .78rem; color: var(--text-soft); }
+  .axis-val { font-size: .85rem; font-variant-numeric: tabular-nums; text-align: right; font-weight: 600; }
+  .axis-track {
+    position: relative; height: .55rem; border-radius: 999px;
+    background: rgba(150,168,182,.18); overflow: hidden;
+  }
+  .axis-fill {
+    position: absolute; top: 0; bottom: 0; border-radius: 999px;
+    background: var(--accent); opacity: .85;
+  }
+  .axis-fill.bi-neg { background: #8B6B5C; }
+  .axis-fill.bi-pos { background: var(--accent); }
+  .meta-chips { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .75rem; }
+  .chip {
+    font-size: .72rem; padding: .2rem .5rem; border-radius: .45rem;
+    background: rgba(150,168,182,.14); color: var(--text-soft);
+  }
+  .chip.on { background: rgba(76,99,120,.18); color: var(--text); }
+  .chip.warn { background: rgba(156,91,60,.14); color: #9C5B3C; }
+  .prose-box {
+    margin-top: .65rem; padding: .55rem .65rem; border-radius: .55rem;
+    background: rgba(150,168,182,.08); font-size: .8rem; line-height: 1.5; color: var(--text);
+  }
+  .prose-box .k { font-size: .68rem; color: var(--text-faint); margin-bottom: .2rem; }
+  .rate-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; margin-top: .75rem; }
+  @media (max-width: 420px) { .rate-grid { grid-template-columns: 1fr; } }
+  .rate-cell label { display: block; font-size: .72rem; color: var(--text-soft); margin-bottom: .2rem; }
+  .rate-cell .sub { font-size: .65rem; color: var(--text-faint); }
+  .rate-cell input {
+    width: 100%; padding: .4rem .5rem; border: 1px solid var(--card-line);
+    border-radius: .45rem; background: var(--input-bg); font-size: .85rem;
+    font-variant-numeric: tabular-nums; color: var(--text); font-family: inherit;
+  }
+  .tone-grid { display: flex; flex-direction: column; gap: .75rem; margin-top: .75rem; }
+  .tone-cluster { border: 1px solid var(--card-line); border-radius: .6rem; padding: .55rem; background: rgba(255,255,255,.45); }
+  .tone-cluster h3 { font-size: .8rem; font-weight: 600; color: var(--text); margin-bottom: .45rem; }
+  .tone-tier { margin-bottom: .45rem; }
+  .tone-tier:last-child { margin-bottom: 0; }
+  .tone-tier label { display: block; font-size: .68rem; color: var(--text-faint); margin-bottom: .15rem; }
+  .tone-tier textarea {
+    width: 100%; min-height: 2.8rem; padding: .4rem .5rem; border: 1px solid var(--card-line);
+    border-radius: .45rem; background: var(--input-bg); font-size: .78rem; line-height: 1.4;
+    font-family: inherit; color: var(--text); resize: vertical;
+  }
+  .log-table { width: 100%; border-collapse: collapse; font-size: .75rem; margin-top: .5rem; }
+  .log-table th {
+    text-align: left; font-weight: 600; color: var(--text-faint); font-size: .65rem;
+    padding: .25rem .2rem; border-bottom: 1px solid var(--card-line);
+  }
+  .log-table td {
+    padding: .4rem .2rem; border-bottom: 1px solid rgba(150,168,182,.12);
+    vertical-align: top; line-height: 1.35;
+  }
+  .log-kind {
+    display: inline-block; font-size: .65rem; padding: .1rem .35rem; border-radius: .3rem;
+    background: rgba(150,168,182,.16); color: var(--text-soft); white-space: nowrap;
+  }
+  .log-kind.delta { background: rgba(76,99,120,.16); color: var(--text); }
+  .log-kind.contact { background: rgba(156,91,60,.16); color: #9C5B3C; }
+  .log-kind.reset { background: rgba(120,140,100,.16); color: #5a6e4a; }
+  .log-delta { font-variant-numeric: tabular-nums; color: var(--text-soft); font-size: .7rem; }
+  .log-note { color: var(--text); margin-top: .15rem; }
+  .adv-json { margin-top: .75rem; }
+  .adv-json summary { cursor: pointer; font-size: .8rem; color: var(--text-soft); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <a class="back-btn" href="/#home" title="返回主页">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+  </a>
+  <h1>感知</h1>
+</div>
+
+<div id="panelAffect">
+<div class="card">
+  <div class="card-title">实时状态</div>
+  <div class="axis-list" id="affAxes"></div>
+  <div class="meta-chips" id="affChips"></div>
+  <div class="prose-box" id="affStyleWrap" hidden>
+    <div class="k">当前情绪</div>
+    <div id="affStyle">—</div>
+      </div>
+      <div class="btn-row">
+    <button type="button" class="btn primary" id="affRefresh">刷新</button>
+    <span class="hint" id="affStateMsg"></span>
+      </div>
+    </div>
+
+<div class="card">
+  <div class="card-title">涨速</div>
+  <p class="hint">单位：connection / 分钟。保存即生效。夜里另有 circadian 压速。</p>
+  <div class="rate-grid" id="affRateGrid"></div>
+      <div class="btn-row">
+    <button type="button" class="btn primary" id="affSaveRates">保存涨速</button>
+    <span class="hint" id="affRatesMsg"></span>
+      </div>
+  <details class="adv-json">
+    <summary>高级：JSON</summary>
+    <div class="field" style="margin-top:.5rem;"><label>connectionRates</label>
+      <textarea id="affRates" rows="6" style="width:100%;font-family:ui-monospace,Consolas,monospace;font-size:.75rem;"></textarea>
+    </div>
+  </details>
+</div>
+
+<div class="card">
+  <div class="card-title">语调覆盖</div>
+  <div class="tone-grid" id="affToneGrid"></div>
+  <div class="btn-row">
+    <button type="button" class="btn primary" id="affSaveProfiles">保存语调</button>
+    <span class="hint" id="affProfilesMsg"></span>
+  </div>
+  <details class="adv-json">
+    <summary>高级：完整 profiles JSON</summary>
+    <div class="field" style="margin-top:.5rem;">
+      <textarea id="affProfiles" rows="8" style="width:100%;font-family:ui-monospace,Consolas,monospace;font-size:.75rem;"></textarea>
+  </div>
+  </details>
+</div>
+
+<div class="card">
+  <div class="card-title">最近变动</div>
+  <p class="hint">优先看 delta；tick / reset 可对照积温节奏。</p>
+  <div style="overflow-x:auto;">
+    <table class="log-table" id="affLogTable">
+      <thead>
+        <tr><th>时间</th><th>类型</th><th>轴 / 说明</th></tr>
+      </thead>
+      <tbody id="affLogBody"><tr><td colspan="3">加载中…</td></tr></tbody>
+    </table>
+  </div>
+    </div>
+</div>
+
+<div class="footer">Tidal — Perception</div>
+
+<script>
+(function () {
+  const a = document.querySelector("a.back-btn");
+  if (!a) return;
+  a.addEventListener("click", (e) => {
+    e.preventDefault();
+    let sameHome = false;
+    try {
+      const u = new URL(document.referrer);
+      sameHome = u.origin === location.origin && (/\/$/.test(u.pathname) || /\/index\.html$/.test(u.pathname));
+    } catch (_) {}
+    if (sameHome && history.length > 1) history.back();
+    else location.replace("/#home");
+  });
+})();
+</script>
+<script>
+/* ── 情绪维护（积温）── */
+(function () {
+const API_BASE = "";
+const TOKEN_KEY = "companion_secret";
+  const $ = (id) => document.getElementById(id);
+  function auth() {
+  const t = localStorage.getItem(TOKEN_KEY);
+    return {
+      Authorization: t ? "Bearer " + t : "0",
+      "Content-Type": "application/json",
+    };
+  }
+
+  const RATE_FIELDS = [
+    { key: "none", label: "无 tag", hint: "日常沉默" },
+    { key: "short", label: "短消息中断", hint: "" },
+    { key: "fragile", label: "脆弱 / 难过", hint: "更快" },
+    { key: "conflict", label: "冲突 / 语气", hint: "" },
+    { key: "body_harm", label: "熬夜通宵", hint: "" },
+    { key: "affection", label: "亲昵后", hint: "稍慢" },
+    { key: "busy", label: "忙 / 去睡", hint: "慢" },
+    { key: "reject", label: "推开", hint: "慢" },
+  ];
+
+  const TONE_CLUSTERS = [
+    { key: "neutral", label: "中性 neutral" },
+    { key: "pleased", label: "偏开心 pleased" },
+    { key: "content", label: "满足慵懒 content" },
+    { key: "excited", label: "兴奋 excited" },
+    { key: "calm", label: "平静 calm" },
+    { key: "restless", label: "挂念躁动 restless" },
+    { key: "sullen", label: "阴郁 sullen" },
+    { key: "agitated", label: "烦躁 agitated" },
+    { key: "depressed", label: "低落 depressed" },
+  ];
+  const TONE_TIERS = [
+    { key: "1", label: "档 1 · 低防御" },
+    { key: "2", label: "档 2 · 偏低" },
+    { key: "3", label: "档 3 · 日常" },
+    { key: "4", label: "档 4 · 偏高" },
+    { key: "5", label: "档 5 · 高防御" },
+  ];
+
+  const AXIS_DEFS = [
+    { key: "connection", label: "连接 c", lo: 0, hi: 1, bipolar: false },
+    { key: "pride", label: "自尊/姿态 p", lo: -1, hi: 1, bipolar: true },
+    { key: "valence", label: "心情 v", lo: -1, hi: 1, bipolar: true },
+    { key: "arousal", label: "唤醒 a", lo: -1, hi: 1, bipolar: true },
+    { key: "immersion", label: "沉浸 i", lo: 0, hi: 1, bipolar: false },
+  ];
+
+  let _defaultsRates = {};
+  let _lastProfiles = {};
+
+  function buildRateGrid() {
+    const root = $("affRateGrid");
+    root.innerHTML = RATE_FIELDS.map((f) => (
+      `<div class="rate-cell" data-key="${f.key}">
+        <label>${f.label}${f.hint ? ` <span class="sub">${f.hint}</span>` : ""}</label>
+        <input type="number" step="0.0001" min="0" max="0.01" id="rate_${f.key}" inputmode="decimal">
+      </div>`
+    )).join("");
+  }
+
+  function buildToneGrid() {
+    const root = $("affToneGrid");
+    root.innerHTML = TONE_CLUSTERS.map((c) => (
+      `<div class="tone-cluster" data-cluster="${c.key}">
+        <h3>${c.label}</h3>
+        ${TONE_TIERS.map((t) => (
+          `<div class="tone-tier">
+            <label>${t.label}</label>
+            <textarea id="tone_${c.key}_${t.key}" rows="3" placeholder="留空 = 用内置通用文案；完全不注入请关设置页「启用语调染色」"></textarea>
+          </div>`
+        )).join("")}
+      </div>`
+    )).join("");
+  }
+
+  buildRateGrid();
+  buildToneGrid();
+
+  function n(v, d) {
+    const x = Number(v);
+    return Number.isFinite(x) ? x : d;
+  }
+
+  function classifyCluster(v, a) {
+    if (v > 0.3 && a > 0.3) return "excited";
+    if (v > 0.3 && a < -0.3) return "content";
+    if (v > 0.3) return "pleased";
+    if (v < -0.3 && a > 0.3) return "agitated";
+    if (v < -0.3 && a < -0.3) return "depressed";
+    if (v < -0.3) return "sullen";
+    if (a > 0.3) return "restless";
+    if (a < -0.3) return "calm";
+    return "neutral";
+  }
+  function classifyPride(p) {
+    if (p > 0.8) return 5;
+    if (p > 0.5) return 4;
+    if (p > 0.3) return 3;
+    if (p > 0.1) return 2;
+    return 1;
+  }
+  function classifyUrgency(c) {
+    if (c >= 0.5) return "desperate";
+    if (c >= 0.35) return "urgent";
+    if (c >= 0.2) return "aware";
+    return "none";
+  }
+
+  function fmtNum(v, digits) {
+    return n(v, 0).toFixed(digits);
+  }
+
+  function hoursTo(target, c, ratePerMin) {
+    const r = n(ratePerMin, 0);
+    if (r <= 0) return null;
+    const need = target - n(c, 0);
+    if (need <= 0) return 0;
+    return need / r / 60;
+  }
+
+  function fmtHours(h) {
+    if (h == null) return "—";
+    if (h <= 0) return "已越过";
+    if (h < 1) return `约 ${Math.round(h * 60)} 分钟`;
+    return `约 ${h.toFixed(1)} 小时`;
+  }
+
+  function renderAxes(state) {
+    const s = state || {};
+    $("affAxes").innerHTML = AXIS_DEFS.map((ax) => {
+      const v = n(s[ax.key], 0);
+      let fillHtml;
+      if (ax.bipolar) {
+        const mid = 50;
+        if (v >= 0) {
+          const w = (v / ax.hi) * 50;
+          fillHtml = `<div class="axis-fill bi-pos" style="left:${mid}%;width:${Math.min(50, Math.max(0, w))}%;"></div>`;
+        } else {
+          const w = (Math.abs(v) / Math.abs(ax.lo)) * 50;
+          fillHtml = `<div class="axis-fill bi-neg" style="left:${mid - Math.min(50, w)}%;width:${Math.min(50, Math.max(0, w))}%;"></div>`;
+        }
+      } else {
+        const pct = ((v - ax.lo) / (ax.hi - ax.lo)) * 100;
+        fillHtml = `<div class="axis-fill" style="left:0;width:${Math.min(100, Math.max(0, pct))}%;"></div>`;
+      }
+      return `<div class="axis-row">
+        <span class="axis-lab">${ax.label}</span>
+        <div class="axis-track">${fillHtml}</div>
+        <span class="axis-val">${fmtNum(v, ax.key === "connection" || ax.key === "immersion" ? 3 : 2)}</span>
+    </div>`;
+  }).join("");
+}
+
+  function renderChips(st) {
+    const s = (st && st.state) || {};
+    const r = (st && st.rate) || {};
+    const f = (st && st.flags) || {};
+    const pend = (st && st.pending) || {};
+    const pObj = pend.pending;
+    const c = n(s.connection, 0);
+    const rate = n(r.rate, 0);
+    const cluster = classifyCluster(n(s.valence, 0), n(s.arousal, 0));
+    const tier = classifyPride(n(s.pride, 0));
+    const urg = classifyUrgency(c);
+    const chips = [
+      { t: `簇 ${cluster}`, on: true },
+      { t: `pride 档 ${tier}`, on: true },
+      { t: `急迫 ${urg}`, on: urg !== "none", warn: urg === "desperate" },
+      { t: `速率 ${rate}/min (${r.reason || r.tag || "?"})`, on: false },
+      { t: `→0.35 ${fmtHours(hoursTo(0.35, c, rate))}`, on: false },
+      { t: `→0.50 ${fmtHours(hoursTo(0.50, c, rate))}`, on: false },
+      { t: `分析 ${f.analyzeEnabled ? "开" : "关"}`, on: !!f.analyzeEnabled },
+      { t: `染色 ${f.toneEnabled ? "开" : "关"}`, on: !!f.toneEnabled },
+      { t: `可分析 ${f.canAnalyze ? "是" : "否"}`, on: !!f.canAnalyze, warn: f.analyzeEnabled && !f.canAnalyze },
+      {
+        t: pObj ? `pending ${pObj.id}` : "无 pending",
+        on: !!pObj,
+        warn: !!pObj,
+      },
+      {
+        t: `冷却 ${Math.round(n(pend.cooldownMs, 0) / 60000)} min`,
+        on: n(pend.cooldownMs, 0) > 0,
+      },
+    ];
+    $("affChips").innerHTML = chips.map((x) => {
+      const cls = ["chip", x.on ? "on" : "", x.warn ? "warn" : ""].filter(Boolean).join(" ");
+      return `<span class="${cls}">${x.t}</span>`;
+    }).join("");
+
+    const style = (st && st.styleGuidance) || "";
+    $("affStyleWrap").hidden = !style;
+    $("affStyle").textContent = style;
+  }
+
+  function fillRates(rates, defaults) {
+    _defaultsRates = defaults || {};
+    const merged = Object.assign({}, _defaultsRates, rates || {});
+    RATE_FIELDS.forEach((f) => {
+      const el = $("rate_" + f.key);
+      if (el) el.value = merged[f.key] != null ? merged[f.key] : "";
+    });
+    $("affRates").value = JSON.stringify(rates && Object.keys(rates).length ? rates : merged, null, 2);
+  }
+
+  function profileLine(profiles, cluster, tier) {
+    const cell = profiles && profiles[cluster] && profiles[cluster][tier];
+    if (Array.isArray(cell)) return cell.filter(Boolean).join("\n");
+    if (typeof cell === "string") return cell;
+    return "";
+  }
+
+  function fillTone(profiles, defaultProfiles) {
+    _lastProfiles = profiles && typeof profiles === "object" ? profiles : {};
+    TONE_CLUSTERS.forEach((c) => {
+      TONE_TIERS.forEach((t) => {
+        const el = $("tone_" + c.key + "_" + t.key);
+        if (!el) return;
+        el.value = profileLine(_lastProfiles, c.key, t.key);
+        const builtin = profileLine(defaultProfiles, c.key, t.key);
+        el.placeholder = builtin
+          ? `留空 = 用内置：${builtin}`
+          : "留空 = 用内置通用文案";
+      });
+    });
+    $("affProfiles").value = JSON.stringify(_lastProfiles, null, 2);
+  }
+
+  function collectRatesFromInputs() {
+    const out = {};
+    RATE_FIELDS.forEach((f) => {
+      const el = $("rate_" + f.key);
+      const v = n(el && el.value, NaN);
+      if (Number.isFinite(v)) out[f.key] = v;
+    });
+    return out;
+  }
+
+  function collectToneFromInputs() {
+    const out = {};
+    TONE_CLUSTERS.forEach((c) => {
+      TONE_TIERS.forEach((t) => {
+        const el = $("tone_" + c.key + "_" + t.key);
+        const text = (el && el.value || "").trim();
+        if (!text) return;
+        if (!out[c.key]) out[c.key] = {};
+        out[c.key][t.key] = text.split(/\n+/).map((s) => s.trim()).filter(Boolean);
+      });
+    });
+    // 保留用户 JSON 里其它簇（未在简易格编辑的）。
+    // 九宫格渲染过的簇以输入框为准：清空 = 回到内置通用文案，不再从旧配置里恢复。
+    Object.keys(_lastProfiles || {}).forEach((ck) => {
+      if (TONE_CLUSTERS.some((c) => c.key === ck)) return;
+      if (out[ck]) return;
+      out[ck] = _lastProfiles[ck];
+    });
+    TONE_CLUSTERS.forEach((c) => {
+      if (!_lastProfiles[c.key]) return;
+      Object.keys(_lastProfiles[c.key] || {}).forEach((tk) => {
+        if (["1", "2", "3", "4", "5"].includes(String(tk))) return;
+        if (!out[c.key]) out[c.key] = {};
+        if (out[c.key][tk] == null) out[c.key][tk] = _lastProfiles[c.key][tk];
+      });
+    });
+    return out;
+  }
+
+  function fmtTime(iso) {
+    if (!iso) return "—";
+    try {
+      const d = new Date(iso);
+      return d.toLocaleString("zh-CN", { hour12: false, month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+    } catch (_) {
+      return String(iso).slice(5, 16);
+    }
+  }
+
+  function parseDelta(raw) {
+    if (!raw) return null;
+    if (typeof raw === "object") return raw;
+    try { return JSON.parse(raw); } catch (_) { return null; }
+  }
+
+  function fmtDeltaBits(d) {
+    if (!d) return "";
+    const keys = ["pride", "valence", "arousal", "connection", "immersion"];
+    return keys.map((k) => {
+      const v = n(d[k], 0);
+      if (Math.abs(v) < 0.001) return null;
+      const sign = v > 0 ? "+" : "";
+      return `${k[0]}${sign}${v.toFixed(2)}`;
+    }).filter(Boolean).join(" ");
+  }
+
+  function renderLog(items) {
+    const rows = (items || []).slice(0, 40);
+    if (!rows.length) {
+      $("affLogBody").innerHTML = `<tr><td colspan="3">（空）</td></tr>`;
+      return;
+    }
+    $("affLogBody").innerHTML = rows.map((row) => {
+      const kind = row.kind || "?";
+      const d = parseDelta(row.delta);
+      const bits = fmtDeltaBits(d);
+      const axes = `c=${fmtNum(row.connection, 2)} p=${fmtNum(row.pride, 2)}`;
+      const note = (row.note || "").replace(/^llm\s*\|\s*/, "");
+      return `<tr>
+        <td style="white-space:nowrap;">${fmtTime(row.at)}</td>
+        <td><span class="log-kind ${kind}">${kind}</span></td>
+        <td>
+          <div class="log-delta">${axes}${bits ? " · " + bits : ""}</div>
+          ${note ? `<div class="log-note">${note}</div>` : ""}
+        </td>
+      </tr>`;
+    }).join("");
+  }
+
+  async function loadAffect() {
+    try {
+      const [st, pr, lg] = await Promise.all([
+        fetch(API_BASE + "/app/affect/state", { headers: auth() }).then((r) => r.json()),
+        fetch(API_BASE + "/app/affect/profile", { headers: auth() }).then((r) => r.json()),
+        fetch(API_BASE + "/app/affect/log?limit=40", { headers: auth() }).then((r) => r.json()),
+      ]);
+      if (st && st.error && String(st.error).includes("401")) location.replace("/");
+      if (!st || !st.ok) {
+        $("affAxes").innerHTML = "";
+        $("affChips").textContent = (st && st.error) || "状态加载失败";
+      } else {
+        renderAxes(st.state);
+        renderChips(st);
+      }
+      const profile = (pr && pr.profile) || {};
+      const defaults = (pr && pr.defaults && pr.defaults.connectionRates) || {};
+      const rates = profile.connectionRates || {};
+      fillRates(rates, defaults);
+      fillTone(profile.profiles || {}, (pr && pr.defaults && pr.defaults.profiles) || {});
+      renderLog((lg && lg.items) || []);
+      $("affStateMsg").textContent = "已刷新 " + new Date().toLocaleTimeString();
+    } catch (e) {
+      $("affChips").textContent = "加载失败: " + e.message;
+    }
+  }
+
+  async function savePatch(fields, msgEl) {
+    try {
+      const r = await fetch(API_BASE + "/app/affect/profile", {
+        method: "PUT",
+        headers: auth(),
+        body: JSON.stringify({ patch: true, ...fields }),
+    });
+    const d = await r.json();
+      msgEl.textContent = d.ok ? "已保存" : (d.error || "失败");
+      if (d.ok) loadAffect();
+    } catch (e) {
+      msgEl.textContent = e.message;
+    }
+  }
+
+  $("affRefresh").addEventListener("click", loadAffect);
+  $("affSaveRates").addEventListener("click", () => {
+    try {
+      // 若高级 JSON 比输入框新且用户刚改过，以输入框为准（主路径）
+      const connectionRates = collectRatesFromInputs();
+      $("affRates").value = JSON.stringify(connectionRates, null, 2);
+      savePatch({ connectionRates }, $("affRatesMsg"));
+    } catch (e) {
+      $("affRatesMsg").textContent = e.message;
+    }
+  });
+  $("affSaveProfiles").addEventListener("click", () => {
+    try {
+      const profiles = collectToneFromInputs();
+      $("affProfiles").value = JSON.stringify(profiles, null, 2);
+      savePatch({ profiles }, $("affProfilesMsg"));
+    } catch (e) {
+      $("affProfilesMsg").textContent = e.message;
+    }
+  });
+
+  loadAffect();
+  setInterval(loadAffect, 60000);
+})();
+</script>
+</body>
+</html>

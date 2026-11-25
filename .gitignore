@@ -1,0 +1,39 @@
+# — Python —
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+
+# — Node.js —
+node_modules/
+
+# — IDE —
+.idea/
+.vscode/
+
+# — SQLite —
+*.db
+*.db-shm
+*.db-wal
+chat_relay/data/
+memory_service/data/
+/chroma_data/
+memory_service/chroma_data/
+/ntfy_data/
+
+# — 环境变量 / 密钥 —
+.env
+!.env.example
+chat_relay/.relay_secret
+*.pem
+!*.pem.example
+
+# — 运行时状态 / 临时文件 / 环境 —
+.bridge_state/
+uploads/
+backups/
+*.log
+# 仅忽略仓库根 Windows 便携 Node；memory_service/services/tools 必须入库
+/tools/
+/logs/
