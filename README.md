@@ -8,6 +8,7 @@
 |---|---|
 | ![主菜单](assets/screenshots/01-menu.png) | ![记忆星图](assets/screenshots/03-memory.png) |
 
+> 本仓库为脱敏整合版，完整开发历史保留在私有库。  
 > 实测环境：Windows 11 · Python 3.12 · Node 22 · 2026-11。  
 > 推荐浏览器：Microsoft Edge；手机 PWA 用系统浏览器。  
 > 默认上手：让 AI 按 [`AI-HANDOFF.md`](AI-HANDOFF.md) 施工并验收；你也可以照着同一份文件手动做。
